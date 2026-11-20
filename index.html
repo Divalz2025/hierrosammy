@@ -238,7 +238,7 @@
 
     <div id="empty-state" class="hidden bg-white rounded-xl border-2 border-dashed border-slate-300 p-12 text-center my-6">
       <h3 class="font-industrial font-extrabold text-xl uppercase text-samy-deep mb-1">No se encontraron productos</h3>
-      <p class="text-sm text-slate-500 mb-4">Verifica que el archivo <strong>Catalogof.csv</strong> esté en el mismo directorio y tenga el formato correcto.</p>
+      <p class="text-sm text-slate-500 mb-4">Verifica que el archivo <strong>Catalogof.csv</strong> esté en el mismo directorio y se abra mediante un servidor web (no con doble clic desde archivo local).</p>
     </div>
   </main>
 
@@ -356,7 +356,7 @@
     let selectedCategory = "TODOS";
     let currencyMode = "BOTH";
     let config = {
-      bcvRate: 917.78,
+      bcvRate: 918.77,
       whatsappPhone: "584144077442"
     };
 
@@ -406,7 +406,6 @@
         }
       }
 
-      // Si las APIs externas no responden, se mantiene la tasa del CSV o el valor por defecto
       updateHeaderUI();
       applyFilters();
       renderCart();
@@ -420,7 +419,9 @@
         parseCsvRobust(csvText);
       } catch (error) {
         console.error(error);
-        showToast("Error al cargar Catalogof.csv. Verifica que esté en la raíz de GitHub.", "error");
+        if (window.location.protocol !== "file:") {
+          showToast("Error al cargar Catalogof.csv. Verifica que esté en la raíz de GitHub.", "error");
+        }
       }
     }
 
@@ -477,13 +478,6 @@
         let precioDolar = parseFloat((cols[5] || "0").replace(/\$/g, "").replace(/\./g, "").replace(",", ".")) || 0;
         let precioBcv = parseFloat((cols[6] || "0").replace(/Bs\.?/gi, "").replace(/\./g, "").replace(",", ".")) || 0;
         const fotoUrl = cols[7] || "";
-        const tasaFila = parseFloat((cols[8] || "0").replace(/\./g, "").replace(",", ".")) || 0;
-
-        if (tasaFila > 0 && i === 1) {
-          config.bcvRate = tasaFila;
-        } else if (precioDolar > 0 && precioBcv > 0 && i === 1) {
-          config.bcvRate = precioBcv / precioDolar;
-        }
 
         if (precioDolar === 0 && precioBcv > 0) {
           precioDolar = precioBcv / config.bcvRate;
