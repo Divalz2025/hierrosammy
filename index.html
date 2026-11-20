@@ -312,7 +312,7 @@
     </div>
   </div>
 
-  <!-- CART DRAWER -->
+  <!-- CART DRAWER (LISTA DE COTIZACIÓN) -->
   <div id="cart-drawer-overlay" onclick="toggleCartDrawer()" class="fixed inset-0 z-50 hidden bg-slate-950/60 transition-opacity"></div>
   <aside id="cart-drawer" class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col border-l-4 border-samy-navy">
     <div class="bg-samy-dark text-white px-5 py-4 flex items-center justify-between border-b border-slate-700">
@@ -324,9 +324,32 @@
       </div>
       <button onclick="toggleCartDrawer()" class="bg-samy-steel hover:bg-samy-silver hover:text-samy-deep text-white w-8 h-8 rounded font-bold transition cursor-pointer">✕</button>
     </div>
+
     <div id="cart-items-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
-    <div class="bg-white border-t-2 border-slate-200 p-4 space-y-3 shadow-inner">
-      <input type="text" id="customer-name" placeholder="Tu Nombre / Empresa" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-samy-navy" />
+
+    <div class="bg-white border-t-2 border-slate-200 p-4 space-y-2.5 shadow-inner">
+      <!-- CAMPOS OBLIGATORIOS DEL CLIENTE -->
+      <div class="space-y-2">
+        <div>
+          <input 
+            type="text" 
+            id="customer-name" 
+            oninput="validateQuoteForm()"
+            placeholder="Tu Nombre / Empresa *" 
+            class="w-full border border-slate-300 rounded px-2.5 py-2 text-xs font-medium focus:outline-none focus:border-samy-navy transition" 
+          />
+        </div>
+        <div>
+          <input 
+            type="text" 
+            id="customer-id" 
+            oninput="validateQuoteForm()"
+            placeholder="Cédula / RIF (Ej: V-12345678 / J-12345678-9) *" 
+            class="w-full border border-slate-300 rounded px-2.5 py-2 text-xs font-medium focus:outline-none focus:border-samy-navy transition" 
+          />
+        </div>
+      </div>
+
       <div class="bg-samy-dark text-white rounded-lg p-3 space-y-1 border border-slate-700">
         <div class="flex justify-between items-center text-xs text-slate-300">
           <span>Tasa BCV:</span>
@@ -341,7 +364,20 @@
           <span id="cart-total-bs" class="font-industrial font-extrabold text-base text-white">Bs. 0,00</span>
         </div>
       </div>
-      <button onclick="sendWhatsAppOrder()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-industrial font-extrabold uppercase py-3 px-4 rounded text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+
+      <!-- MENSAJE DE ADVERTENCIA SI SE INTENTA ENVIAR SIN COMPLETAR CAMPOS -->
+      <div id="whatsapp-validation-alert" class="hidden bg-red-50 border border-red-300 text-red-700 px-3 py-2 rounded text-xs font-semibold flex items-center gap-2">
+        <span>⚠️</span>
+        <span id="whatsapp-validation-text">Por favor completa Tu Nombre / Empresa y Cédula / RIF para activar el envío.</span>
+      </div>
+
+      <!-- BOTÓN WHATSAPP CON ESTADO ACTIVO/DESACTIVADO -->
+      <button 
+        id="btn-send-whatsapp"
+        onclick="sendWhatsAppOrder()" 
+        aria-disabled="true"
+        class="w-full bg-slate-400 text-slate-100 opacity-75 cursor-not-allowed font-industrial font-extrabold uppercase py-3 px-4 rounded text-sm transition shadow-md flex items-center justify-center gap-2"
+      >
         Enviar Pedido por WhatsApp (+584144077442)
       </button>
     </div>
@@ -371,6 +407,7 @@
       renderCategoryTabs();
       applyFilters();
       renderCart();
+      validateQuoteForm();
     }
 
     async function fetchBcvRateAuto() {
@@ -656,6 +693,7 @@
       if (isClosed) {
         drawer.classList.remove("translate-x-full");
         overlay.classList.remove("hidden");
+        validateQuoteForm();
       } else {
         drawer.classList.add("translate-x-full");
         overlay.classList.add("hidden");
@@ -734,12 +772,81 @@
       document.getElementById("cart-total-bs").textContent = "Bs. " + (totalUsd * config.bcvRate).toLocaleString("es-VE", {minimumFractionDigits: 2});
     }
 
+    /* VALIDACIÓN EN TIEMPO REAL DE TU NOMBRE / EMPRESA Y CÉDULA / RIF */
+    function validateQuoteForm() {
+      const nameInput = document.getElementById("customer-name");
+      const idInput = document.getElementById("customer-id");
+      const btn = document.getElementById("btn-send-whatsapp");
+      const alertBox = document.getElementById("whatsapp-validation-alert");
+
+      const isNameValid = nameInput.value.trim().length > 0;
+      const isIdValid = idInput.value.trim().length > 0;
+      const isReady = isNameValid && isIdValid;
+
+      if (isNameValid) {
+        nameInput.classList.remove("border-red-500", "bg-red-50");
+        nameInput.classList.add("border-slate-300");
+      }
+      if (isIdValid) {
+        idInput.classList.remove("border-red-500", "bg-red-50");
+        idInput.classList.add("border-slate-300");
+      }
+
+      if (isReady) {
+        btn.setAttribute("aria-disabled", "false");
+        btn.classList.remove("bg-slate-400", "text-slate-100", "opacity-75", "cursor-not-allowed");
+        btn.classList.add("bg-emerald-600", "hover:bg-emerald-500", "text-white", "cursor-pointer", "shadow-lg");
+        alertBox.classList.add("hidden");
+      } else {
+        btn.setAttribute("aria-disabled", "true");
+        btn.classList.remove("bg-emerald-600", "hover:bg-emerald-500", "text-white", "cursor-pointer", "shadow-lg");
+        btn.classList.add("bg-slate-400", "text-slate-100", "opacity-75", "cursor-not-allowed");
+      }
+
+      return isReady;
+    }
+
     function sendWhatsAppOrder() {
+      const nameInput = document.getElementById("customer-name");
+      const idInput = document.getElementById("customer-id");
+      const alertBox = document.getElementById("whatsapp-validation-alert");
+      const alertText = document.getElementById("whatsapp-validation-text");
+
+      const customerName = nameInput.value.trim();
+      const customerId = idInput.value.trim();
+
+      /* SI ESTÁ DESACTIVADO (CAMPOS VACÍOS), MOSTRAR MENSAJE Y RESALTAR CAMPOS */
+      if (!customerName || !customerId) {
+        let missingFields = [];
+        if (!customerName) {
+          missingFields.push("Tu Nombre / Empresa");
+          nameInput.classList.remove("border-slate-300");
+          nameInput.classList.add("border-red-500", "bg-red-50");
+        }
+        if (!customerId) {
+          missingFields.push("Cédula / RIF");
+          idInput.classList.remove("border-slate-300");
+          idInput.classList.add("border-red-500", "bg-red-50");
+        }
+
+        const msgError = `Debes llenar los campos obligatorios: ${missingFields.join(" y ")}.`;
+        alertText.textContent = msgError;
+        alertBox.classList.remove("hidden");
+        showToast(msgError, "error");
+
+        if (!customerName) {
+          nameInput.focus();
+        } else {
+          idInput.focus();
+        }
+        return;
+      }
+
       if (cart.length === 0) {
         showToast("Agrega productos a tu cotización primero.", "error");
         return;
       }
-      const customer = document.getElementById("customer-name").value.trim() || "Cliente";
+
       let totalUsd = 0;
       const lines = cart.map((entry, index) => {
         const prod = products.find(p => p.codigo === entry.codigo);
@@ -750,7 +857,8 @@
       }).filter(Boolean);
 
       const msg = `*PEDIDO - Catálogo Digital Hierro Sammy*\n` +
-        `👤 *Cliente:* ${customer}\n` +
+        `👤 *Cliente / Empresa:* ${customerName}\n` +
+        `🪪 *Cédula / RIF:* ${customerId}\n` +
         `💱 *Tasa BCV:* ${config.bcvRate.toLocaleString("es-VE", {minimumFractionDigits: 2})} Bs.\n` +
         `----------------------------------\n` +
         lines.join("\n") +
@@ -767,7 +875,7 @@
       toast.className = `toast-enter pointer-events-auto border-l-4 ${type === "error" ? "bg-red-600 text-white border-red-200" : "bg-samy-dark text-white border-samy-silver"} px-4 py-3 rounded shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 max-w-sm`;
       toast.innerHTML = `<span>${type === "error" ? "⚠" : "✔"}</span><span>${message}</span>`;
       container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
+      setTimeout(() => toast.remove(), 3500);
     }
 
     window.onload = initApp;
