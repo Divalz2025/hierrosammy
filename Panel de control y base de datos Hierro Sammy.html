@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADMINISTRADOR DE BASE DE DATOS | HIERRO SAMMY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Barlow', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            ingco: {
+              yellow: '#F5A623',
+              orange: '#FF7A00',
+              black: '#111111',
+              dark: '#1A1A1A',
+              steel: '#262626',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #F3F4F6; color: #111111; }
+    h1, h2, h3, h4, .font-industrial { font-family: 'Barlow', sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP BAR -->
+  <div class="bg-ingco-black text-white border-b border-neutral-800 text-xs sm:text-sm py-2 px-4">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-bold text-ingco-yellow">PANEL DE CONTROL Y BASE DE DATOS</span>
+        <span id="repo-status-badge" class="hidden sm:inline-block text-[11px] bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded font-mono">
+          Divalz2025/hierrosammy (main)
+        </span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span>Tasa de Cambio Actual: <strong id="top-bcv-display" class="text-ingco-yellow">914,02 Bs.</strong></span>
+        <a id="catalog-web-link" href="https://divalz2025.github.io/hierrosammy/" target="_blank" rel="noopener noreferrer" class="bg-ingco-yellow text-black font-bold px-3 py-1 rounded hover:bg-ingco-orange transition text-xs">
+          Ver Catálogo Web ↗
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="bg-ingco-dark text-white border-b-4 border-ingco-yellow py-6 px-4 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>
+        <div class="font-industrial font-black text-3xl uppercase tracking-tight">
+          HIERRO<span class="text-ingco-yellow">SAMMY</span> <span class="text-neutral-400 text-xl">| Base de Datos</span>
+        </div>
+        <p class="text-xs text-neutral-400 mt-1">Gestión de inventario CSV (9 columnas), precios BCV y sincronización directa con GitHub.</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" onclick="openProductModal()" class="bg-ingco-yellow hover:bg-ingco-orange text-ingco-black font-industrial font-black uppercase px-4 py-2.5 rounded text-sm transition shadow flex items-center gap-2 cursor-pointer">
+          <span>+ Nuevo Producto</span>
+        </button>
+        <button type="button" onclick="pushCatalogToGithub()" id="btn-push-github" class="bg-emerald-500 hover:bg-emerald-400 text-black font-industrial font-black uppercase px-4 py-2.5 rounded text-sm transition shadow flex items-center gap-1.5 cursor-pointer">
+          <span>☁ Subir a GitHub</span>
+        </button>
+        <button type="button" onclick="pullCatalogFromGithub()" class="bg-neutral-800 hover:bg-neutral-700 text-sky-300 border border-sky-400/40 font-bold px-3 py-2.5 rounded text-xs transition cursor-pointer" title="Cargar Catalogof.csv desde GitHub">
+          ↻ Leer Repo
+        </button>
+        <button type="button" onclick="openGithubModal()" class="bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-600 font-bold px-3 py-2.5 rounded text-xs transition cursor-pointer" title="Configurar repositorio y token">
+          ⚙ Repo / Token
+        </button>
+        <button type="button" onclick="exportCsv()" class="bg-neutral-800 hover:bg-neutral-700 text-ingco-yellow border border-ingco-yellow/40 font-bold px-3 py-2.5 rounded text-xs transition cursor-pointer">
+          ↓ Exportar CSV
+        </button>
+        <button type="button" onclick="document.getElementById('csv-file').click()" class="bg-neutral-800 hover:bg-neutral-700 text-white font-bold px-3 py-2.5 rounded text-xs transition cursor-pointer">
+          ↑ Importar CSV
+        </button>
+        <input type="file" id="csv-file" accept=".csv,text/csv" onchange="importCsv(event)" class="hidden" />
+      </div>
+    </div>
+  </header>
+
+  <!-- NOTIFICACIÓN TOAST -->
+  <div id="toast-notification" class="fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300 max-w-md">
+    <div id="toast-box" class="bg-ingco-black text-white border-l-4 border-ingco-yellow px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 text-xs font-semibold">
+      <span id="toast-icon" class="text-ingco-yellow text-base font-bold shrink-0">✓</span>
+      <span id="toast-message">Operación completada</span>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs border-l-4 border-ingco-yellow">
+        <div class="text-xs text-neutral-500 font-bold uppercase">Total Productos en BD</div>
+        <div id="stat-total" class="font-industrial font-black text-3xl text-ingco-black mt-1">0</div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs border-l-4 border-emerald-500">
+        <div class="text-xs text-neutral-500 font-bold uppercase">Con Stock Activo</div>
+        <div id="stat-stock" class="font-industrial font-black text-3xl text-emerald-600 mt-1">0</div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs border-l-4 border-ingco-orange flex items-center justify-between gap-2">
+        <div>
+          <div class="text-xs text-neutral-500 font-bold uppercase">Tasa de Cambio (BCV)</div>
+          <div id="stat-bcv" class="font-industrial font-extrabold text-2xl text-ingco-black mt-1">914,02 Bs.</div>
+        </div>
+        <button type="button" onclick="openRateModal()" class="bg-ingco-yellow hover:bg-ingco-orange text-black text-xs font-extrabold uppercase px-3 py-2.5 rounded-lg transition shadow-xs cursor-pointer">
+          Cambiar Tasa
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+      <div class="p-4 bg-neutral-50 border-b border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="w-full sm:w-96">
+          <input
+            type="text"
+            id="search-box"
+            oninput="renderTable()"
+            placeholder="Buscar por código SKU, nombre, categoría o descripción..."
+            class="w-full bg-white border border-neutral-300 rounded-lg px-3 py-2 text-xs font-medium focus:outline-none focus:border-ingco-yellow"
+          />
+        </div>
+        <div class="text-xs text-neutral-500 font-semibold" id="table-counter">
+          Mostrando registros
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-ingco-black text-white font-industrial text-[11px] uppercase tracking-wider">
+              <th class="p-3 whitespace-nowrap">1. Código SKU</th>
+              <th class="p-3 whitespace-nowrap">2. Nombre del Producto</th>
+              <th class="p-3 whitespace-nowrap">3. Categoría</th>
+              <th class="p-3 min-w-[200px]">4. Descripción</th>
+              <th class="p-3 text-center whitespace-nowrap">5. Stock</th>
+              <th class="p-3 text-right whitespace-nowrap">6. Precio Dólar</th>
+              <th class="p-3 text-right whitespace-nowrap">7. Precio BCV</th>
+              <th class="p-3 text-center whitespace-nowrap">8. Foto</th>
+              <th class="p-3 text-right whitespace-nowrap">9. Tasa de Cambio</th>
+              <th class="p-3 text-center whitespace-nowrap">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="products-table-body" class="divide-y divide-neutral-200 text-xs"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: CONFIGURAR GITHUB -->
+  <div id="github-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-lg w-full overflow-hidden shadow-2xl border-2 border-ingco-yellow">
+      <div class="bg-ingco-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-ingco-yellow">
+        <h3 class="font-industrial font-extrabold text-lg uppercase">Configuración GitHub API</h3>
+        <button type="button" onclick="closeGithubModal()" class="text-neutral-400 hover:text-white font-bold text-xl cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="saveGithubConfigForm(event)" class="p-5 space-y-3.5 text-xs">
+        <p class="text-neutral-600 leading-relaxed">
+          Usa un <strong>Fine-grained Personal Access Token</strong> con permiso <strong>Contents: Read and write</strong> solo para el repositorio destino. El token se guarda únicamente en este navegador.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">Usuario / Owner *</label>
+            <input type="text" id="gh-owner" required placeholder="Divalz2025" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-mono font-bold focus:border-ingco-yellow focus:outline-none" />
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">Repositorio *</label>
+            <input type="text" id="gh-repo" required placeholder="hierrosammy" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-mono font-bold focus:border-ingco-yellow focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">Ruta del CSV *</label>
+            <input type="text" id="gh-path" required placeholder="Catalogof.csv" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-mono focus:border-ingco-yellow focus:outline-none" />
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">Rama (Branch) *</label>
+            <input type="text" id="gh-branch" required placeholder="main" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-mono focus:border-ingco-yellow focus:outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold uppercase text-neutral-700 mb-1">Personal Access Token (GitHub)</label>
+          <input type="password" id="gh-token" placeholder="github_pat_..." class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-mono focus:border-ingco-yellow focus:outline-none" />
+          <div class="flex items-center justify-between mt-1.5">
+            <span id="gh-token-status" class="text-[11px] text-neutral-500"></span>
+            <button type="button" onclick="clearGithubToken()" class="text-[11px] text-red-600 hover:underline font-bold cursor-pointer">Borrar token guardado</button>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeGithubModal()" class="bg-neutral-200 hover:bg-neutral-300 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-ingco-yellow hover:bg-ingco-orange font-industrial font-extrabold uppercase px-5 py-2 rounded-lg text-black cursor-pointer">Guardar Configuración</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CAMBIAR TASA DE CAMBIO -->
+  <div id="rate-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full overflow-hidden shadow-2xl border-2 border-ingco-yellow">
+      <div class="bg-ingco-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-ingco-yellow">
+        <h3 class="font-industrial font-extrabold text-lg uppercase">Actualizar Tasa de Cambio</h3>
+        <button type="button" onclick="closeRateModal()" class="text-neutral-400 hover:text-white font-bold text-xl cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="saveRateForm(event)" class="p-5 space-y-4 text-xs">
+        <p class="text-neutral-600 leading-relaxed">
+          Al actualizar la tasa de cambio, se recalculará automáticamente el <strong>PRECIO BCV</strong> y la <strong>TASA DE CAMBIO</strong> en todos los productos.
+        </p>
+        <div>
+          <label class="block font-bold uppercase text-neutral-700 mb-1">Nueva Tasa de Cambio (Bs. por 1 USD) *</label>
+          <input type="number" step="0.01" min="0.01" id="form-rate-input" required placeholder="914.02" class="w-full border border-neutral-300 rounded-lg px-3 py-2.5 font-industrial font-black text-lg text-ingco-black focus:border-ingco-yellow focus:outline-none" />
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeRateModal()" class="bg-neutral-200 hover:bg-neutral-300 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-ingco-yellow hover:bg-ingco-orange font-industrial font-extrabold uppercase px-5 py-2 rounded-lg text-black cursor-pointer">Aplicar Tasa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AGREGAR / EDITAR PRODUCTO -->
+  <div id="product-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-xl w-full overflow-hidden shadow-2xl border-2 border-ingco-yellow max-h-[92vh] flex flex-col">
+      <div class="bg-ingco-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-ingco-yellow shrink-0">
+        <h3 id="modal-heading" class="font-industrial font-extrabold text-lg uppercase">Agregar Nuevo Producto</h3>
+        <button type="button" onclick="closeProductModal()" class="text-neutral-400 hover:text-white font-bold text-xl cursor-pointer">✕</button>
+      </div>
+
+      <form onsubmit="saveProductForm(event)" class="p-5 space-y-4 text-xs overflow-y-auto">
+        <input type="hidden" id="edit-index" value="-1" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">1. Código SKU *</label>
+            <input type="text" id="form-codigo" required placeholder="ej. UCS18578" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-mono uppercase font-bold focus:border-ingco-yellow focus:outline-none" />
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">3. Categoría *</label>
+            <input type="text" id="form-categoria" list="categorias-sugeridas" required placeholder="ej. Herramientas Eléctricas" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-semibold focus:border-ingco-yellow focus:outline-none" />
+            <datalist id="categorias-sugeridas">
+              <option value="Herramientas Eléctricas"></option>
+              <option value="Herramientas Manuales"></option>
+              <option value="Plomería"></option>
+              <option value="Tornillería"></option>
+              <option value="Abrasivos"></option>
+              <option value="Pinturas"></option>
+              <option value="General"></option>
+            </datalist>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold uppercase text-neutral-700 mb-1">2. Nombre del Producto *</label>
+          <input type="text" id="form-nombre" required placeholder="ej. Sierra Circular" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-bold text-sm focus:border-ingco-yellow focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block font-bold uppercase text-neutral-700 mb-1">4. Descripción / Especificaciones Técnicas</label>
+          <textarea id="form-descripcion" rows="3" placeholder="Voltaje: 110-120V~50/60Hz&#10;Potencia de entrada: 1200W" class="w-full border border-neutral-300 rounded-lg px-3 py-2 focus:border-ingco-yellow focus:outline-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">5. Stock (Unid.) *</label>
+            <input type="number" min="0" id="form-stock" required placeholder="15" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-bold text-sm focus:border-ingco-yellow focus:outline-none" />
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">6. Precio Dólar ($) *</label>
+            <input type="number" step="0.01" min="0" id="form-precio" oninput="updateModalBcvPreview()" required placeholder="30.00" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-bold text-sm focus:border-ingco-yellow focus:outline-none" />
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">7. Precio BCV (Auto)</label>
+            <input type="text" id="form-precio-bcv-preview" readonly class="w-full bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2 font-bold text-sm text-neutral-700 cursor-not-allowed" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold uppercase text-neutral-700 mb-1">8. URL de Foto / Imagen</label>
+          <div class="flex items-center gap-3">
+            <input type="text" id="form-foto" oninput="updateModalPhotoPreview()" placeholder="https://i.ibb.co/..." class="flex-1 border border-neutral-300 rounded-lg px-3 py-2 focus:border-ingco-yellow focus:outline-none" />
+            <div class="w-12 h-12 rounded-lg border border-neutral-300 bg-neutral-100 flex items-center justify-center overflow-hidden shrink-0">
+              <img id="form-foto-preview" src="https://placehold.co/80x80/262626/F5A623?text=IMG" alt="Vista previa" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/80x80/262626/F5A623?text=SIN+FOTO'" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeProductModal()" class="bg-neutral-200 hover:bg-neutral-300 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-ingco-yellow hover:bg-ingco-orange font-industrial font-extrabold uppercase px-5 py-2 rounded-lg text-black cursor-pointer">Guardar Producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMACIÓN DE ELIMINACIÓN -->
+  <div id="delete-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-sm w-full overflow-hidden shadow-2xl border-2 border-red-500">
+      <div class="bg-ingco-dark text-white px-5 py-3 flex items-center justify-between border-b-2 border-red-500">
+        <h3 class="font-industrial font-extrabold text-base uppercase text-red-400">Confirmar Eliminación</h3>
+        <button type="button" onclick="closeDeleteModal()" class="text-neutral-400 hover:text-white font-bold text-lg cursor-pointer">✕</button>
+      </div>
+      <div class="p-5 text-xs space-y-4">
+        <p id="delete-modal-text" class="text-neutral-700 font-medium text-sm"></p>
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="closeDeleteModal()" class="bg-neutral-200 hover:bg-neutral-300 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
+          <button type="button" onclick="confirmDeleteProduct()" class="bg-red-600 hover:bg-red-700 text-white font-industrial font-extrabold uppercase px-4 py-2 rounded-lg cursor-pointer">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let products = [];
+    let config = { bcvRate: 914.02 };
+    let pendingDeleteIndex = -1;
+    let toastTimeout = null;
+    let isPushingGithub = false;
+
+    const GH_STORAGE_KEY = "ferrepro_github_cfg";
+    const GH_TOKEN_KEY = "ferrepro_github_token";
+
+    let githubConfig = {
+      owner: "Divalz2025",
+      repo: "hierrosammy",
+      path: "Catalogof.csv",
+      branch: "main"
+    };
+
+    const DEFAULT_PRODUCTS = [
+      {
+        codigoSku: "UCS18578",
+        nombreProducto: "Sierra Circular",
+        categoria: "Herramientas Eléctricas",
+        descripcion: "Voltaje: 110-120V~50/60Hz\nPotencia de entrada: 1200W\nDiámetro de la hoja: 7-1/4\"x0.787\"",
+        stock: 15,
+        precioDolar: 30,
+        precioBcv: Number((30 * 914.02).toFixed(2)),
+        foto: "https://i.ibb.co/hRGhLNJb/Sierra-Circular.jpg",
+        tasaCambio: 914.02
+      },
+      {
+        codigoSku: "UPS2408",
+        nombreProducto: "Lijadora Orbital De Mano",
+        categoria: "Herramientas Eléctricas",
+        descripcion: "Voltaje:110-120V~60Hz\nPotencia de entrada:240W\nVelocidad sin carga:14000rpm",
+        stock: 10,
+        precioDolar: 25,
+        precioBcv: Number((25 * 914.02).toFixed(2)),
+        foto: "https://i.ibb.co/PsY5q0q1/Lijadora-Orbital-De-Mano.jpg",
+        tasaCambio: 914.02
+      },
+      {
+        codigoSku: "UCOS223589",
+        nombreProducto: "Sierra cortada",
+        categoria: "Herramientas Eléctricas",
+        descripcion: "Voltage:110V-120V~50-60Hz\nInput power: 2200W\nBlade size:14\"x1\"",
+        stock: 20,
+        precioDolar: 15,
+        precioBcv: Number((15 * 914.02).toFixed(2)),
+        foto: "https://i.ibb.co/pBjTRfsd/Cierra-cortada.jpg",
+        tasaCambio: 914.02
+      }
+    ];
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById("toast-notification");
+      const box = document.getElementById("toast-box");
+      const icon = document.getElementById("toast-icon");
+      const msg = document.getElementById("toast-message");
+
+      msg.textContent = message;
+      if (isError) {
+        box.classList.remove("border-ingco-yellow");
+        box.classList.add("border-red-500");
+        icon.classList.remove("text-ingco-yellow");
+        icon.classList.add("text-red-400");
+        icon.textContent = "!";
+      } else {
+        box.classList.remove("border-red-500");
+        box.classList.add("border-ingco-yellow");
+        icon.classList.remove("text-red-400");
+        icon.classList.add("text-ingco-yellow");
+        icon.textContent = "✓";
+      }
+
+      toast.classList.remove("hidden");
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add("hidden");
+      }, 3800);
+    }
+
+    function loadGithubConfig() {
+      const saved = localStorage.getItem(GH_STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          githubConfig = {
+            owner: (parsed.owner || "Divalz2025").trim(),
+            repo: (parsed.repo || "hierrosammy").trim(),
+            path: (parsed.path || "Catalogof.csv").trim().replace(/^\/+/, ""),
+            branch: (parsed.branch || "main").trim()
+          };
+        } catch (e) {}
+      }
+      updateGithubBadges();
+    }
+
+    function updateGithubBadges() {
+      const badge = document.getElementById("repo-status-badge");
+      if (badge) {
+        badge.textContent = `${githubConfig.owner}/${githubConfig.repo} (${githubConfig.branch})`;
+      }
+      const link = document.getElementById("catalog-web-link");
+      if (link) {
+        link.href = `https://${githubConfig.owner.toLowerCase()}.github.io/${githubConfig.repo}/`;
+      }
+    }
+
+    function openGithubModal() {
+      document.getElementById("gh-owner").value = githubConfig.owner;
+      document.getElementById("gh-repo").value = githubConfig.repo;
+      document.getElementById("gh-path").value = githubConfig.path;
+      document.getElementById("gh-branch").value = githubConfig.branch;
+
+      const token = localStorage.getItem(GH_TOKEN_KEY) || "";
+      document.getElementById("gh-token").value = token;
+      document.getElementById("gh-token-status").textContent = token
+        ? "Token guardado en este navegador."
+        : "Sin token guardado.";
+      document.getElementById("github-modal").classList.remove("hidden");
+    }
+
+    function closeGithubModal() {
+      document.getElementById("github-modal").classList.add("hidden");
+    }
+
+    function clearGithubToken() {
+      localStorage.removeItem(GH_TOKEN_KEY);
+      document.getElementById("gh-token").value = "";
+      document.getElementById("gh-token-status").textContent = "Token eliminado.";
+      showToast("Token de GitHub borrado de este navegador.");
+    }
+
+    function saveGithubConfigForm(event) {
+      event.preventDefault();
+      githubConfig = {
+        owner: document.getElementById("gh-owner").value.trim(),
+        repo: document.getElementById("gh-repo").value.trim(),
+        path: document.getElementById("gh-path").value.trim().replace(/^\/+/, ""),
+        branch: document.getElementById("gh-branch").value.trim() || "main"
+      };
+      localStorage.setItem(GH_STORAGE_KEY, JSON.stringify(githubConfig));
+
+      const tokenVal = document.getElementById("gh-token").value.trim();
+      if (tokenVal) {
+        localStorage.setItem(GH_TOKEN_KEY, tokenVal);
+      } else {
+        localStorage.removeItem(GH_TOKEN_KEY);
+      }
+
+      updateGithubBadges();
+      closeGithubModal();
+      showToast("Configuración de GitHub guardada.");
+    }
+
+    function utf8ToBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    }
+
+    function base64ToUtf8(b64) {
+      const cleanB64 = String(b64 || "").replace(/\s+/g, "");
+      const binary = atob(cleanB64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return new TextDecoder("utf-8").decode(bytes);
+    }
+
+    function buildCatalogCsvContent() {
+      const delimiter = ";";
+      const header = [
+        "CODIGO SKU",
+        "NOMBRE DEL PRODUCTO",
+        "CATEGORIA",
+        "DESCRIPCION",
+        "STOCK",
+        "PRECIO DOLAR",
+        "PRECIO BCV",
+        "FOTO",
+        "TASA DE CAMBIO"
+      ].join(delimiter);
+
+      const currentRate = Number(config.bcvRate);
+
+      const rows = products.map(p => {
+        const usd = Number(p.precioDolar || 0);
+        const bcv = Number((usd * currentRate).toFixed(2));
+        return [
+          escapeCsvField(p.codigoSku, delimiter),
+          escapeCsvField(p.nombreProducto, delimiter),
+          escapeCsvField(p.categoria, delimiter),
+          escapeCsvField(p.descripcion, delimiter),
+          escapeCsvField(Number(p.stock || 0), delimiter),
+          escapeCsvField(formatCsvNumber(usd), delimiter),
+          escapeCsvField(formatCsvNumber(bcv), delimiter),
+          escapeCsvField(p.foto || "", delimiter),
+          escapeCsvField(formatCsvNumber(currentRate), delimiter)
+        ].join(delimiter);
+      });
+
+      return "\uFEFF" + [header, ...rows].join("\n");
+    }
+
+    function applyCsvText(text) {
+      const firstLine = text.split(/\r?\n/)[0] || "";
+      const delimiter = firstLine.includes(";") ? ";" : ",";
+      const parsedRows = parseCsvRfc4180(text, delimiter);
+
+      if (parsedRows.length < 2) {
+        showToast("El archivo CSV está vacío o no tiene registros.", true);
+        return false;
+      }
+
+      const normalizeHeader = (h) =>
+        String(h || "")
+          .trim()
+          .toUpperCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+
+      const headers = parsedRows[0].map(normalizeHeader);
+
+      const findCol = (names, fallbackIdx) => {
+        const idx = headers.findIndex(h => names.includes(h));
+        return idx !== -1 ? idx : fallbackIdx;
+      };
+
+      const idxSku = findCol(["CODIGO SKU", "CODIGO", "SKU"], 0);
+      const idxNombre = findCol(["NOMBRE DEL PRODUCTO", "PRODUCTO", "NOMBRE"], 1);
+      const idxCat = findCol(["CATEGORIA"], 2);
+      const idxDesc = findCol(["DESCRIPCION", "ESPECIFICACIONES"], 3);
+      const idxStock = findCol(["STOCK", "CANTIDAD"], 4);
+      const idxUsd = findCol(["PRECIO DOLAR", "PRECIO DOLARES", "PRECIO USD"], 5);
+      const idxBcv = findCol(["PRECIO BCV", "PRECIO BS"], 6);
+      const idxFoto = findCol(["FOTO", "IMAGEN", "URL"], 7);
+      const idxTasa = findCol(["TASA DE CAMBIO", "TASA", "TASA BCV"], 8);
+
+      const imported = [];
+      let detectedRate = null;
+
+      for (let i = 1; i < parsedRows.length; i++) {
+        const cols = parsedRows[i];
+        const sku = (cols[idxSku] || "").trim();
+        const nombre = (cols[idxNombre] || "").trim();
+        if (!sku && !nombre) continue;
+
+        const rowRate = parseFlexibleNumber(cols[idxTasa]);
+        if (!isNaN(rowRate) && rowRate > 0) {
+          detectedRate = rowRate;
+        }
+
+        const effectiveRate = detectedRate || config.bcvRate;
+        let usd = parseFlexibleNumber(cols[idxUsd]);
+        let bcv = parseFlexibleNumber(cols[idxBcv]);
+
+        if (isNaN(usd) && !isNaN(bcv) && effectiveRate > 0) {
+          usd = Number((bcv / effectiveRate).toFixed(2));
+        } else if (isNaN(usd)) {
+          usd = 0;
+        }
+
+        if (isNaN(bcv)) {
+          bcv = Number((usd * effectiveRate).toFixed(2));
+        }
+
+        imported.push({
+          codigoSku: sku.toUpperCase(),
+          nombreProducto: nombre,
+          categoria: (cols[idxCat] || "General").trim(),
+          descripcion: (cols[idxDesc] || "").replace(/\r\n/g, "\n").trim(),
+          stock: parseInt(cols[idxStock], 10) || 0,
+          precioDolar: usd,
+          precioBcv: bcv,
+          foto: (cols[idxFoto] || "").trim(),
+          tasaCambio: effectiveRate
+        });
+      }
+
+      if (imported.length > 0) {
+        products = imported;
+        const rateToApply = detectedRate || config.bcvRate;
+        syncProductsWithRate(rateToApply);
+        updateUI();
+        showToast(`¡Se cargaron ${imported.length} productos correctamente!`);
+        return true;
+      }
+
+      showToast("No se encontraron filas válidas en el CSV.", true);
+      return false;
+    }
+
+    async function pullCatalogFromGithub() {
+      const token = localStorage.getItem(GH_TOKEN_KEY) || "";
+      const apiUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/${githubConfig.path}?ref=${encodeURIComponent(githubConfig.branch)}&_=${Date.now()}`;
+      const headers = { "Accept": "application/vnd.github+json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      try {
+        showToast(`Leyendo ${githubConfig.path} desde GitHub...`);
+        const res = await fetch(apiUrl, { headers, cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const csvText = base64ToUtf8(data.content);
+        applyCsvText(csvText);
+      } catch (err) {
+        showToast(`No se pudo leer desde GitHub: ${err.message}`, true);
+      }
+    }
+
+    async function pushCatalogToGithub() {
+      if (isPushingGithub) return;
+
+      const token = localStorage.getItem(GH_TOKEN_KEY) || "";
+      if (!token) {
+        openGithubModal();
+        showToast("Configura tu GitHub Token antes de subir.", true);
+        return;
+      }
+
+      const btn = document.getElementById("btn-push-github");
+      isPushingGithub = true;
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add("opacity-60", "cursor-not-allowed");
+      }
+
+      const encodedPath = githubConfig.path
+        .split("/")
+        .filter(Boolean)
+        .map(encodeURIComponent)
+        .join("/");
+
+      const apiUrl = `https://api.github.com/repos/${encodeURIComponent(githubConfig.owner)}/${encodeURIComponent(githubConfig.repo)}/contents/${encodedPath}`;
+      const headers = {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      };
+
+      try {
+        showToast("Sincronizando con GitHub...");
+
+        let sha = null;
+        const getUrl = `${apiUrl}?ref=${encodeURIComponent(githubConfig.branch)}&_=${Date.now()}`;
+        const getRes = await fetch(getUrl, { headers, cache: "no-store" });
+        if (getRes.ok) {
+          const fileInfo = await getRes.json();
+          sha = fileInfo.sha;
+        } else if (getRes.status !== 404) {
+          const errData = await getRes.json().catch(() => ({}));
+          throw new Error(errData.message || `Error ${getRes.status} al consultar archivo`);
+        }
+
+        const csvContent = buildCatalogCsvContent();
+        const payload = {
+          message: `Actualizar ${githubConfig.path} (${products.length} items, tasa ${config.bcvRate})`,
+          content: utf8ToBase64(csvContent),
+          branch: githubConfig.branch
+        };
+        if (sha) payload.sha = sha;
+
+        const putRes = await fetch(apiUrl, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify(payload)
+        });
+
+        if (!putRes.ok) {
+          const errData = await putRes.json().catch(() => ({}));
+          throw new Error(errData.message || `Error ${putRes.status} al subir archivo`);
+        }
+
+        showToast(`¡${githubConfig.path} actualizado en ${githubConfig.owner}/${githubConfig.repo}!`);
+      } catch (err) {
+        showToast(`Error al subir a GitHub: ${err.message}`, true);
+      } finally {
+        isPushingGithub = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove("opacity-60", "cursor-not-allowed");
+        }
+      }
+    }
+
+    function syncProductsWithRate(rate) {
+      const cleanRate = Number(rate) || 914.02;
+      config.bcvRate = cleanRate;
+      products = products.map(p => {
+        const usd = Number(p.precioDolar) || 0;
+        return {
+          ...p,
+          precioDolar: usd,
+          precioBcv: Number((usd * cleanRate).toFixed(2)),
+          tasaCambio: cleanRate
+        };
+      });
+      localStorage.setItem("ferrepro_config", JSON.stringify(config));
+      localStorage.setItem("ferrepro_products", JSON.stringify(products));
+    }
+
+    function initAdmin() {
+      loadGithubConfig();
+
+      const savedConfig = localStorage.getItem("ferrepro_config");
+      if (savedConfig) {
+        try {
+          const parsed = JSON.parse(savedConfig);
+          if (parsed && Number(parsed.bcvRate) > 0) {
+            config.bcvRate = Number(parsed.bcvRate);
+          }
+        } catch (e) {}
+      }
+
+      const savedProducts = localStorage.getItem("ferrepro_products");
+      if (savedProducts) {
+        try {
+          const parsedList = JSON.parse(savedProducts);
+          if (Array.isArray(parsedList) && parsedList.length > 0) {
+            products = parsedList.map(item => ({
+              codigoSku: item.codigoSku || item.codigo || "",
+              nombreProducto: item.nombreProducto || item.producto || "",
+              categoria: item.categoria || "General",
+              descripcion: item.descripcion !== undefined ? item.descripcion : (item.especificaciones || ""),
+              stock: Number(item.stock) || 0,
+              precioDolar: Number(item.precioDolar !== undefined ? item.precioDolar : item.precioUsd) || 0,
+              precioBcv: 0,
+              foto: item.foto || "",
+              tasaCambio: config.bcvRate
+            }));
+          } else {
+            products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+          }
+        } catch (e) {
+          products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+        }
+      } else {
+        products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+      }
+
+      syncProductsWithRate(config.bcvRate);
+      updateUI();
+    }
+
+    function formatVisualDecimal(num) {
+      return Number(num || 0).toLocaleString("es-VE", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function updateUI() {
+      const formattedRate = formatVisualDecimal(config.bcvRate) + " Bs.";
+      document.getElementById("top-bcv-display").textContent = formattedRate;
+      document.getElementById("stat-bcv").textContent = formattedRate;
+      document.getElementById("stat-total").textContent = products.length;
+      document.getElementById("stat-stock").textContent = products.filter(p => Number(p.stock) > 0).length;
+
+      renderTable();
+    }
+
+    function renderTable() {
+      const query = (document.getElementById("search-box").value || "").toLowerCase();
+      const filtered = products.filter(p =>
+        (p.codigoSku || "").toLowerCase().includes(query) ||
+        (p.nombreProducto || "").toLowerCase().includes(query) ||
+        (p.categoria || "").toLowerCase().includes(query) ||
+        (p.descripcion || "").toLowerCase().includes(query)
+      );
+
+      document.getElementById("table-counter").textContent = `Mostrando ${filtered.length} de ${products.length} productos`;
+
+      const tbody = document.getElementById("products-table-body");
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-neutral-400 font-medium">No se encontraron productos en la base de datos.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((p) => {
+        const realIdx = products.indexOf(p);
+        const precioUsd = Number(p.precioDolar || 0);
+        const tasa = Number(p.tasaCambio || config.bcvRate);
+        const precioBcv = Number(p.precioBcv || (precioUsd * tasa));
+        const descHtml = p.descripcion
+          ? escapeHtml(p.descripcion).replace(/\n/g, "<br>")
+          : '<span class="text-neutral-400 italic">Sin descripción</span>';
+        const imgUrl = p.foto && p.foto.trim() !== ""
+          ? escapeHtml(p.foto.trim())
+          : "https://placehold.co/80x80/262626/F5A623?text=SIN+FOTO";
+
+        return `
+          <tr class="hover:bg-neutral-50 transition align-middle">
+            <td class="p-3 font-mono font-bold text-ingco-black whitespace-nowrap">
+              <span class="bg-ingco-black text-ingco-yellow px-2.5 py-1 rounded text-[11px] tracking-wide">${escapeHtml(p.codigoSku)}</span>
+            </td>
+            <td class="p-3 font-industrial font-extrabold text-sm uppercase text-neutral-900">
+              ${escapeHtml(p.nombreProducto)}
+            </td>
+            <td class="p-3 whitespace-nowrap">
+              <span class="bg-neutral-200 text-neutral-800 px-2.5 py-1 rounded-md font-bold text-[10px] uppercase">${escapeHtml(p.categoria)}</span>
+            </td>
+            <td class="p-3 text-neutral-600 text-[11px] leading-snug max-w-xs">
+              ${descHtml}
+            </td>
+            <td class="p-3 text-center whitespace-nowrap">
+              <span class="px-2.5 py-1 rounded-md font-bold text-[11px] ${Number(p.stock) > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                ${Number(p.stock)} unid.
+              </span>
+            </td>
+            <td class="p-3 text-right font-industrial font-black text-base text-ingco-orange whitespace-nowrap">
+              $${formatVisualDecimal(precioUsd)}
+            </td>
+            <td class="p-3 text-right font-industrial font-extrabold text-sm text-neutral-800 whitespace-nowrap">
+              Bs. ${formatVisualDecimal(precioBcv)}
+            </td>
+            <td class="p-3 text-center">
+              <div class="w-11 h-11 mx-auto rounded-lg border border-neutral-200 bg-white overflow-hidden shadow-2xs flex items-center justify-center">
+                <img
+                  src="${imgUrl}"
+                  alt="${escapeHtml(p.nombreProducto)}"
+                  class="w-full h-full object-cover"
+                  onerror="this.onerror=null;this.src='https://placehold.co/80x80/262626/F5A623?text=IMG';"
+                />
+              </div>
+            </td>
+            <td class="p-3 text-right font-mono font-bold text-xs text-neutral-600 whitespace-nowrap">
+              ${formatVisualDecimal(tasa)} Bs.
+            </td>
+            <td class="p-3 text-center whitespace-nowrap space-x-1">
+              <button type="button" onclick="openProductModal(${realIdx})" class="bg-neutral-200 hover:bg-ingco-yellow text-black px-2.5 py-1.5 rounded-md font-bold transition cursor-pointer">Editar</button>
+              <button type="button" onclick="requestDeleteProduct(${realIdx})" class="bg-red-100 hover:bg-red-600 hover:text-white text-red-700 px-2.5 py-1.5 rounded-md font-bold transition cursor-pointer">Eliminar</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function openRateModal() {
+      document.getElementById("form-rate-input").value = config.bcvRate;
+      document.getElementById("rate-modal").classList.remove("hidden");
+    }
+
+    function closeRateModal() {
+      document.getElementById("rate-modal").classList.add("hidden");
+    }
+
+    function saveRateForm(event) {
+      event.preventDefault();
+      const val = parseFloat(document.getElementById("form-rate-input").value);
+      if (isNaN(val) || val <= 0) {
+        showToast("Ingrese una tasa de cambio válida mayor a 0.", true);
+        return;
+      }
+      syncProductsWithRate(Number(val.toFixed(4)));
+      closeRateModal();
+      updateUI();
+      showToast(`Tasa actualizada a ${formatVisualDecimal(config.bcvRate)} Bs. y precios recalculados.`);
+    }
+
+    function updateModalBcvPreview() {
+      const usd = parseFloat(document.getElementById("form-precio").value) || 0;
+      const bcv = usd * config.bcvRate;
+      document.getElementById("form-precio-bcv-preview").value = `Bs. ${formatVisualDecimal(bcv)}`;
+    }
+
+    function updateModalPhotoPreview() {
+      const url = document.getElementById("form-foto").value.trim();
+      const img = document.getElementById("form-foto-preview");
+      img.src = url || "https://placehold.co/80x80/262626/F5A623?text=IMG";
+    }
+
+    function openProductModal(index = -1) {
+      document.getElementById("edit-index").value = index;
+      if (index >= 0) {
+        const p = products[index];
+        document.getElementById("modal-heading").textContent = "Editar Producto: " + p.codigoSku;
+        document.getElementById("form-codigo").value = p.codigoSku;
+        document.getElementById("form-nombre").value = p.nombreProducto;
+        document.getElementById("form-categoria").value = p.categoria || "Herramientas Eléctricas";
+        document.getElementById("form-descripcion").value = p.descripcion || "";
+        document.getElementById("form-stock").value = p.stock;
+        document.getElementById("form-precio").value = p.precioDolar;
+        document.getElementById("form-foto").value = p.foto || "";
+      } else {
+        document.getElementById("modal-heading").textContent = "Agregar Nuevo Producto";
+        document.getElementById("form-codigo").value = "SKU-" + String(products.length + 1).padStart(4, "0");
+        document.getElementById("form-nombre").value = "";
+        document.getElementById("form-categoria").value = "Herramientas Eléctricas";
+        document.getElementById("form-descripcion").value = "";
+        document.getElementById("form-stock").value = "10";
+        document.getElementById("form-precio").value = "";
+        document.getElementById("form-foto").value = "";
+      }
+      updateModalBcvPreview();
+      updateModalPhotoPreview();
+      document.getElementById("product-modal").classList.remove("hidden");
+    }
+
+    function closeProductModal() {
+      document.getElementById("product-modal").classList.add("hidden");
+    }
+
+    function saveProductForm(event) {
+      event.preventDefault();
+      const idx = parseInt(document.getElementById("edit-index").value, 10);
+      const precioDolar = parseFloat(document.getElementById("form-precio").value) || 0;
+      const tasaCambio = Number(config.bcvRate);
+      const precioBcv = Number((precioDolar * tasaCambio).toFixed(2));
+
+      const productData = {
+        codigoSku: document.getElementById("form-codigo").value.trim().toUpperCase(),
+        nombreProducto: document.getElementById("form-nombre").value.trim(),
+        categoria: document.getElementById("form-categoria").value.trim() || "General",
+        descripcion: document.getElementById("form-descripcion").value.replace(/\r\n/g, "\n").trim(),
+        stock: parseInt(document.getElementById("form-stock").value, 10) || 0,
+        precioDolar: precioDolar,
+        precioBcv: precioBcv,
+        foto: document.getElementById("form-foto").value.trim(),
+        tasaCambio: tasaCambio
+      };
+
+      if (idx >= 0) {
+        products[idx] = productData;
+      } else {
+        products.push(productData);
+      }
+
+      localStorage.setItem("ferrepro_products", JSON.stringify(products));
+      closeProductModal();
+      updateUI();
+      showToast("¡Producto guardado localmente! Recuerda pulsar 'Subir a GitHub' para publicar.");
+    }
+
+    function requestDeleteProduct(index) {
+      pendingDeleteIndex = index;
+      const p = products[index];
+      document.getElementById("delete-modal-text").textContent =
+        `¿Estás seguro de que deseas eliminar el producto [${p.codigoSku}] ${p.nombreProducto}?`;
+      document.getElementById("delete-modal").classList.remove("hidden");
+    }
+
+    function closeDeleteModal() {
+      pendingDeleteIndex = -1;
+      document.getElementById("delete-modal").classList.add("hidden");
+    }
+
+    function confirmDeleteProduct() {
+      if (pendingDeleteIndex >= 0 && pendingDeleteIndex < products.length) {
+        const removed = products.splice(pendingDeleteIndex, 1)[0];
+        localStorage.setItem("ferrepro_products", JSON.stringify(products));
+        updateUI();
+        showToast(`Producto ${removed.codigoSku} eliminado.`);
+      }
+      closeDeleteModal();
+    }
+
+    function formatCsvNumber(num) {
+      const n = Number(num || 0);
+      const rounded = Math.round(n * 100) / 100;
+      return String(rounded).replace(".", ",");
+    }
+
+    function escapeCsvField(value, delimiter = ";") {
+      const str = value === null || value === undefined ? "" : String(value);
+      if (str.includes('"') || str.includes("\n") || str.includes("\r") || str.includes(delimiter)) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    }
+
+    function exportCsv() {
+      const csvContent = buildCatalogCsvContent();
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Inventario_BaseDatos.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("Archivo CSV exportado con las 9 columnas.");
+    }
+
+    function parseFlexibleNumber(str) {
+      if (str === null || str === undefined) return NaN;
+      let cleaned = String(str).replace(/\$|Bs\.?/gi, "").trim();
+      if (!cleaned) return NaN;
+      if (cleaned.includes(".") && cleaned.includes(",")) {
+        cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+      } else if (cleaned.includes(",")) {
+        cleaned = cleaned.replace(",", ".");
+      }
+      return parseFloat(cleaned);
+    }
+
+    function parseCsvRfc4180(text, delimiter) {
+      const rows = [];
+      let currentRow = [];
+      let currentField = "";
+      let inQuotes = false;
+
+      const cleanText = text.replace(/^\uFEFF/, "");
+
+      for (let i = 0; i < cleanText.length; i++) {
+        const char = cleanText[i];
+        const nextChar = cleanText[i + 1];
+
+        if (inQuotes) {
+          if (char === '"') {
+            if (nextChar === '"') {
+              currentField += '"';
+              i++;
+            } else {
+              inQuotes = false;
+            }
+          } else {
+            currentField += char;
+          }
+        } else {
+          if (char === '"') {
+            inQuotes = true;
+          } else if (char === delimiter) {
+            currentRow.push(currentField);
+            currentField = "";
+          } else if (char === "\r" && nextChar === "\n") {
+            currentRow.push(currentField);
+            rows.push(currentRow);
+            currentRow = [];
+            currentField = "";
+            i++;
+          } else if (char === "\n" || char === "\r") {
+            currentRow.push(currentField);
+            rows.push(currentRow);
+            currentRow = [];
+            currentField = "";
+          } else {
+            currentField += char;
+          }
+        }
+      }
+
+      if (currentField.length > 0 || currentRow.length > 0) {
+        currentRow.push(currentField);
+        rows.push(currentRow);
+      }
+
+      return rows.filter(row => row.some(cell => cell.trim() !== ""));
+    }
+
+    function importCsv(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          applyCsvText(e.target.result);
+        } catch (err) {
+          showToast("Error al procesar el archivo CSV.", true);
+        }
+        event.target.value = "";
+      };
+
+      reader.readAsText(file, "UTF-8");
+    }
+
+    window.addEventListener("DOMContentLoaded", initAdmin);
+  </script>
+</body>
+</html>

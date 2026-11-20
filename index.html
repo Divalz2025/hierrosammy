@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HIERRO SAMMY — Catálogo Digital Ferretero</title>
+  <!-- Favicon con el logo oficial -->
+  <link rel="icon" type="image/png" href="https://i.ibb.co/9kJ1CHYC/logo-transparete.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Barlow', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            samy: {
+              navy: '#153A6E',      /* Azul marino principal del logo */
+              royal: '#1E4E8C',     /* Azul industrial medio para hovers */
+              deep: '#0B1D36',      /* Azul oscuro profundo para fondos/headers */
+              dark: '#0F2544',      /* Azul pizarra oscuro */
+              steel: '#1E3557',     /* Azul acero para tarjetas oscuras */
+              silver: '#CBD5E1',    /* Plateado claro metálico */
+              chrome: '#94A3B8',    /* Gris acero cromado */
+              accent: '#38BDF8',    /* Azul celeste metálico para acentos */
+              light: '#F1F5F9',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F1F5F9;
+      color: #0F172A;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, h4, .font-industrial {
+      font-family: 'Barlow', sans-serif;
+      letter-spacing: -0.01em;
+    }
+    /* Franja industrial metálica azul y plata */
+    .samy-metal-stripe {
+      background: repeating-linear-gradient(
+        -45deg,
+        #153A6E,
+        #153A6E 14px,
+        #CBD5E1 14px,
+        #CBD5E1 28px
+      );
+    }
+    /* Degradado acero y azul marino para el Hero */
+    .samy-hero-bg {
+      background-color: #0B1D36;
+      background-image: 
+        radial-gradient(circle at 85% 20%, rgba(148, 163, 184, 0.22) 0%, transparent 48%),
+        linear-gradient(135deg, #09172B 0%, #153A6E 65%, #1E293B 100%);
+    }
+    /* Contenedor con brillo sutil para resaltar el logo sobre fondos oscuros */
+    .logo-glow-wrapper {
+      background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(226,232,240,0.92));
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,1);
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B1D36;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #64748B;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+    @keyframes slideInUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .toast-enter {
+      animation: slideInUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP BAR -->
+  <div class="bg-samy-deep text-white border-b border-slate-800 text-xs sm:text-sm">
+    <div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <span class="inline-flex items-center gap-1.5 bg-samy-steel px-2.5 py-1 rounded border border-slate-600/60">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-200 font-medium">Tasa BCV:</span>
+          <strong class="text-samy-silver font-industrial text-sm sm:text-base" id="display-bcv-rate">36,50 Bs.</strong>
+          <button onclick="openSettingsModal()" title="Editar Tasa BCV" class="ml-1 text-xs bg-slate-700 hover:bg-samy-silver hover:text-samy-deep text-white px-1.5 py-0.5 rounded transition font-semibold cursor-pointer">
+            Editar Tasa
+          </button>
+        </span>
+        <span class="hidden lg:inline text-slate-500">|</span>
+        <span class="hidden lg:inline text-slate-300">Catálogo Digital Ferretero & Estructuras Metálicas</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="flex items-center bg-samy-steel p-0.5 rounded border border-slate-600/60" role="group">
+          <button onclick="setCurrencyMode('BOTH')" id="btn-curr-BOTH" class="curr-btn px-2 py-1 rounded text-xs font-bold transition bg-samy-silver text-samy-deep">
+            USD + Bs.
+          </button>
+          <button onclick="setCurrencyMode('USD')" id="btn-curr-USD" class="curr-btn px-2 py-1 rounded text-xs font-bold transition text-slate-300 hover:text-white">
+            Solo $
+          </button>
+          <button onclick="setCurrencyMode('BS')" id="btn-curr-BS" class="curr-btn px-2 py-1 rounded text-xs font-bold transition text-slate-300 hover:text-white">
+            Solo Bs.
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="bg-samy-dark text-white sticky top-0 z-40 shadow-xl border-b-4 border-samy-chrome">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
+      <div class="flex items-center justify-between w-full md:w-auto">
+        <a href="#" onclick="resetFilters(); return false;" class="flex items-center gap-3.5 group">
+          <!-- LOGO OFICIAL EN EL TÍTULO -->
+          <div class="logo-glow-wrapper px-2.5 py-1.5 rounded-lg border border-slate-300 flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
+            <img 
+              src="https://i.ibb.co/9kJ1CHYC/logo-transparete.png" 
+              alt="Logo Hierro Samy" 
+              class="h-11 sm:h-14 w-auto object-contain"
+            />
+          </div>
+          <div>
+            <div id="store-name-header" class="font-industrial font-black text-xl sm:text-2xl tracking-wide uppercase leading-none text-white">
+              HIERRO <span class="text-samy-silver">SAMMY, C.A</span>
+            </div>
+            <div class="text-[11px] text-samy-chrome font-bold tracking-widest uppercase mt-1">
+             J-50055307-2
+            </div>
+          </div>
+        </a>
+
+        <button onclick="toggleCartDrawer()" class="md:hidden relative bg-samy-silver text-samy-deep p-2.5 rounded font-bold flex items-center gap-1.5 shadow">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span id="cart-badge-mobile" class="bg-samy-navy text-white text-xs font-extrabold px-1.5 py-0.5 rounded-full">0</span>
+        </button>
+      </div>
+
+      <div class="w-full md:flex-1 md:max-w-xl relative">
+        <div class="relative flex items-center">
+          <input
+            type="text"
+            id="search-input"
+            oninput="applyFilters()"
+            placeholder="Buscar por código SKU, nombre, categoría, descripción..."
+            class="w-full bg-white text-slate-900 placeholder-slate-500 pl-4 pr-20 py-2.5 rounded font-medium text-sm border-2 border-transparent focus:border-samy-chrome focus:outline-none shadow-inner"
+          />
+          <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-11 text-slate-400 hover:text-samy-navy p-1">✕</button>
+          <span class="absolute right-0 top-0 bottom-0 bg-samy-navy text-white px-3.5 rounded-r flex items-center justify-center font-bold border-l border-slate-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18a7.5 7.5 0 006.15-3.35z" />
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <div class="hidden md:flex items-center gap-3">
+        <button onclick="toggleCartDrawer()" class="bg-gradient-to-b from-slate-100 to-slate-300 hover:from-white hover:to-slate-200 text-samy-deep border border-slate-400 font-industrial font-extrabold uppercase px-4 py-2.5 rounded flex items-center gap-2.5 transition shadow-lg cursor-pointer">
+          <svg class="w-5 h-5 text-samy-navy" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <div class="text-left leading-tight">
+            <div class="text-[11px] font-bold text-samy-navy">MI COTIZACIÓN</div>
+            <div class="text-sm text-slate-900" id="cart-summary-desktop">0 items • $0.00</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="samy-hero-bg text-white relative overflow-hidden border-b border-slate-700">
+    <div class="h-2 w-full samy-metal-stripe"></div>
+    <div class="max-w-7xl mx-auto px-4 py-8 sm:py-11 relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+      <div class="max-w-2xl text-center lg:text-left">
+        <div class="inline-flex items-center gap-2 bg-slate-200/10 border border-slate-400/40 text-samy-silver px-3 py-1 rounded text-xs font-bold uppercase tracking-wider mb-3">
+          <span>⚙️ Acero, Herramientas y Construcción</span>
+        </div>
+        <h1 class="font-industrial font-black text-3xl sm:text-5xl uppercase tracking-tight leading-none mb-3">
+          HERRAMIENTAS Y MATERIALES <span class="text-samy-silver underline decoration-samy-chrome/60 decoration-4 underline-offset-4">DE ALTA RESISTENCIA</span>
+        </h1>
+        <p class="text-slate-200 text-sm sm:text-base mb-6 max-w-xl mx-auto lg:mx-0">
+          Consulta disponibilidad real, especificaciones detalladas y precios actualizados al instante desde nuestro catálogo <strong>Hierro Sammy</strong>. Arma tu cotización y envíala directo por WhatsApp.
+        </p>
+        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3">
+          <a href="#catalogo-section" class="bg-gradient-to-r from-slate-100 to-slate-300 hover:from-white hover:to-slate-200 text-samy-deep font-industrial font-extrabold uppercase px-6 py-3 rounded text-sm sm:text-base tracking-wide transition shadow-lg border border-white">
+            Explorar Catálogo
+          </a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 w-full max-w-sm">
+        <div class="bg-samy-steel/90 border-l-4 border-samy-silver p-4 rounded-r shadow-lg backdrop-blur-xs">
+          <div class="text-slate-300 text-xs font-semibold uppercase">Productos Activos</div>
+          <div id="stat-total-products" class="font-industrial font-black text-2xl sm:text-3xl text-white mt-0.5">0</div>
+          <div class="text-[11px] text-samy-silver mt-0.5">Cargados desde CSV</div>
+        </div>
+        <div class="bg-samy-steel/90 border-l-4 border-emerald-400 p-4 rounded-r shadow-lg backdrop-blur-xs">
+          <div class="text-slate-300 text-xs font-semibold uppercase">En Stock</div>
+          <div id="stat-in-stock" class="font-industrial font-black text-2xl sm:text-3xl text-emerald-400 mt-0.5">0</div>
+          <div class="text-[11px] text-slate-200 mt-0.5">Disponibles</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN CATALOG -->
+  <main id="catalogo-section" class="flex-1 max-w-7xl w-full mx-auto px-4 py-7">
+    <div class="mb-5">
+      <div class="flex items-center justify-between mb-2.5">
+        <h2 class="font-industrial font-extrabold text-lg sm:text-xl uppercase text-samy-deep flex items-center gap-2">
+          <span class="w-2.5 h-6 bg-samy-navy inline-block rounded-xs"></span>
+          Categorías Disponibles
+        </h2>
+        <span id="results-counter" class="text-xs sm:text-sm font-semibold text-slate-600">Cargando productos...</span>
+      </div>
+      <div id="category-tabs" class="flex items-center gap-2 overflow-x-auto pb-2"></div>
+    </div>
+
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+
+    <div id="empty-state" class="hidden bg-white rounded-xl border-2 border-dashed border-slate-300 p-12 text-center my-6">
+      <h3 class="font-industrial font-extrabold text-xl uppercase text-samy-deep mb-1">No se encontraron productos</h3>
+      <p class="text-sm text-slate-500 mb-4">Verifica que el archivo <strong>Catalogof.csv</strong> esté en el mismo directorio y tenga el formato correcto.</p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-samy-deep text-slate-300 border-t-4 border-samy-chrome mt-12">
+    <div class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div class="logo-glow-wrapper px-3 py-2 rounded-lg border border-slate-400 shrink-0">
+          <img src="https://i.ibb.co/9kJ1CHYC/logo-transparete.png" alt="Hierro Samy" class="h-12 w-auto object-contain" />
+        </div>
+        <div>
+          <div class="font-industrial font-black text-2xl text-white uppercase tracking-tight mb-1">
+            HIERRO <span class="text-samy-silver">SAMMYY, C.A</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Catálogo digital interactivo <strong>HIERRO SAMMY</strong>. Tu ferretería y suplidora industrial de confianza.
+          </p>
+        </div>
+      </div>
+      <div class="md:text-right">
+        <h4 class="font-industrial font-bold text-white uppercase tracking-wider text-sm mb-2.5">Atención y Pedidos WhatsApp</h4>
+        <div class="inline-flex items-center gap-2 bg-samy-steel px-3.5 py-2 rounded border border-slate-600 text-xs">
+          <span class="text-samy-silver font-bold">WhatsApp:</span>
+          <span class="text-white font-mono">+58 414-4077442 (Asistente Armando Diaz)</span>
+        </div>
+      </div>
+    </div>
+    <div class="bg-black/40 py-3 text-center text-[11px] text-slate-400 border-t border-slate-800">
+      Catálogo Digital Ferretero — © 2026 HIERRO SAMMY, C.A J-50055307-2 | Todos los derechos reservados.
+    </div>
+  </footer>
+
+  <!-- MODAL: FICHA TÉCNICA -->
+  <div id="product-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full overflow-hidden shadow-2xl border-2 border-samy-navy">
+      <div class="bg-samy-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-samy-chrome">
+        <div class="flex items-center gap-2">
+          <span id="modal-sku" class="bg-samy-silver text-samy-deep font-industrial font-black text-xs px-2.5 py-0.5 rounded uppercase">SKU</span>
+          <span id="modal-category" class="text-xs text-slate-300 font-semibold uppercase tracking-wider">CATEGORIA</span>
+        </div>
+        <button onclick="closeProductModal()" class="text-slate-300 hover:text-white text-xl font-bold px-2 cursor-pointer">✕</button>
+      </div>
+      <div class="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
+        <div class="sm:col-span-5 bg-slate-100 rounded-lg p-4 flex items-center justify-center border border-slate-200">
+          <img id="modal-img" src="" alt="Producto" class="max-h-48 object-contain rounded" onerror="this.src='https://via.placeholder.com/200?text=Sin+Imagen'" />
+        </div>
+        <div class="sm:col-span-7 space-y-3">
+          <h3 id="modal-title" class="font-industrial font-black text-2xl text-samy-deep uppercase leading-tight">Nombre Producto</h3>
+          <div id="modal-stock-badge" class="inline-block text-xs font-bold px-2.5 py-1 rounded">Stock</div>
+          <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+            <div class="text-[11px] font-bold uppercase text-slate-500 mb-1">Descripción</div>
+            <p id="modal-desc" class="text-sm text-slate-800 font-medium leading-relaxed whitespace-pre-line"></p>
+          </div>
+          <div class="bg-samy-dark text-white rounded-lg p-3.5 flex items-center justify-between border border-slate-700">
+            <div>
+              <div class="text-[11px] text-slate-300 uppercase font-semibold">Precio USD ($)</div>
+              <div id="modal-price-usd" class="font-industrial font-black text-2xl text-samy-silver">$0.00</div>
+            </div>
+            <div class="text-right border-l border-slate-700 pl-4">
+              <div class="text-[11px] text-slate-300 uppercase font-semibold">Precio BCV (Bs.)</div>
+              <div id="modal-price-bs" class="font-industrial font-extrabold text-xl text-white">Bs. 0,00</div>
+            </div>
+          </div>
+          <div class="flex gap-2.5 pt-1">
+            <button id="modal-add-btn" class="flex-1 bg-samy-navy hover:bg-samy-royal text-white font-industrial font-extrabold uppercase py-2.5 px-4 rounded text-sm transition flex items-center justify-center gap-2 shadow cursor-pointer">
+              Agregar a Cotización
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SETTINGS (TASA BCV) -->
+  <div id="settings-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full overflow-hidden shadow-2xl border-2 border-samy-navy">
+      <div class="bg-samy-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-samy-chrome">
+        <h3 class="font-industrial font-extrabold text-lg uppercase">⚙ Ajustar Tasa BCV</h3>
+        <button onclick="closeSettingsModal()" class="text-slate-300 hover:text-white text-xl font-bold px-2 cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="saveSettings(event)" class="p-5 space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Tasa de Cambio BCV (Bs. por 1 USD)</label>
+          <input type="number" step="0.01" min="0.01" id="input-bcv-rate" required class="w-full border-2 border-slate-300 focus:border-samy-navy rounded px-3 py-2 font-bold text-base focus:outline-none" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+          <button type="button" onclick="closeSettingsModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded text-xs cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-samy-navy hover:bg-samy-royal text-white font-industrial font-extrabold uppercase px-5 py-2 rounded text-sm shadow cursor-pointer">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CART DRAWER -->
+  <div id="cart-drawer-overlay" onclick="toggleCartDrawer()" class="fixed inset-0 z-50 hidden bg-slate-950/60 transition-opacity"></div>
+  <aside id="cart-drawer" class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col border-l-4 border-samy-navy">
+    <div class="bg-samy-dark text-white px-5 py-4 flex items-center justify-between border-b border-slate-700">
+      <div>
+        <h3 class="font-industrial font-black text-xl uppercase tracking-wide flex items-center gap-2">
+          <span class="text-samy-silver">🛒</span> Lista de Cotización
+        </h3>
+        <p class="text-xs text-slate-300">Envía tu pedido por WhatsApp</p>
+      </div>
+      <button onclick="toggleCartDrawer()" class="bg-samy-steel hover:bg-samy-silver hover:text-samy-deep text-white w-8 h-8 rounded font-bold transition cursor-pointer">✕</button>
+    </div>
+    <div id="cart-items-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
+    <div class="bg-white border-t-2 border-slate-200 p-4 space-y-3 shadow-inner">
+      <input type="text" id="customer-name" placeholder="Tu Nombre / Empresa" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-samy-navy" />
+      <div class="bg-samy-dark text-white rounded-lg p-3 space-y-1 border border-slate-700">
+        <div class="flex justify-between items-center text-xs text-slate-300">
+          <span>Tasa BCV:</span>
+          <span id="cart-bcv-rate-label">0.00 Bs.</span>
+        </div>
+        <div class="flex justify-between items-center pt-1 border-t border-slate-700">
+          <span class="font-industrial font-bold uppercase text-sm">Total Divisas:</span>
+          <span id="cart-total-usd" class="font-industrial font-black text-2xl text-samy-silver">$0.00</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="font-industrial font-bold uppercase text-xs text-slate-300">Total Bolívares:</span>
+          <span id="cart-total-bs" class="font-industrial font-extrabold text-base text-white">Bs. 0,00</span>
+        </div>
+      </div>
+      <button onclick="sendWhatsAppOrder()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-industrial font-extrabold uppercase py-3 px-4 rounded text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+        Enviar Pedido por WhatsApp (+584144077442)
+      </button>
+    </div>
+  </aside>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- JAVASCRIPT ROBUSTO PARA CSV CON SALTOS DE LÍNEA -->
+  <script>
+    let products = [];
+    let cart = [];
+    let selectedCategory = "TODOS";
+    let currencyMode = "BOTH";
+    let config = {
+      bcvRate: 916.02,
+      whatsappPhone: "584144077442"
+    };
+
+    async function initApp() {
+      const savedCart = localStorage.getItem("ferrepro_cart");
+      if (savedCart) { try { cart = JSON.parse(savedCart) || []; } catch (e) { cart = []; } }
+
+      const savedRate = localStorage.getItem("ferrepro_bcv");
+      if (savedRate) { config.bcvRate = parseFloat(savedRate) || 916.02; }
+
+      await loadCatalogCsv();
+      updateHeaderUI();
+      renderCategoryTabs();
+      applyFilters();
+      renderCart();
+    }
+
+    async function loadCatalogCsv() {
+      try {
+        const response = await fetch(`Catalogof.csv?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error("No se pudo cargar Catalogof.csv");
+        const csvText = await response.text();
+        parseCsvRobust(csvText);
+      } catch (error) {
+        console.error(error);
+        showToast("Error al cargar Catalogof.csv. Verifica que esté en la raíz de GitHub.", "error");
+      }
+    }
+
+    function parseCsvRobust(text) {
+      let rows = [];
+      let currentRow = [];
+      let currentField = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+        let nextChar = text[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && nextChar === '"') {
+            currentField += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ';' && !inQuotes) {
+          currentRow.push(currentField.trim());
+          currentField = "";
+        } else if ((char === '\r' || char === '\n') && !inQuotes) {
+          if (char === '\r' && nextChar === '\n') { i++; }
+          currentRow.push(currentField.trim());
+          if (currentRow.length > 1 || currentRow[0] !== "") {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+          currentField = "";
+        } else {
+          currentField += char;
+        }
+      }
+      if (currentField !== "" || currentRow.length > 0) {
+        currentRow.push(currentField.trim());
+        rows.push(currentRow);
+      }
+
+      if (rows.length < 2) return;
+
+      const parsedProducts = [];
+      for (let i = 1; i < rows.length; i++) {
+        const cols = rows[i];
+        if (cols.length < 8 || !cols[0]) continue;
+
+        const codigo = cols[0] || "";
+        const producto = cols[1] || "";
+        const categoria = (cols[2] || "GENERAL").toUpperCase();
+        const descripcion = cols[3] || "";
+        const stock = parseInt((cols[4] || "0").replace(/[^\d]/g, ""), 10) || 0;
+        
+        let precioDolar = parseFloat((cols[5] || "0").replace(/\$/g, "").replace(/\./g, "").replace(",", ".")) || 0;
+        let precioBcv = parseFloat((cols[6] || "0").replace(/Bs\.?/gi, "").replace(/\./g, "").replace(",", ".")) || 0;
+        const fotoUrl = cols[7] || "";
+        const tasaFila = parseFloat((cols[8] || "0").replace(/\./g, "").replace(",", ".")) || 0;
+
+        if (tasaFila > 0 && i === 1) {
+          config.bcvRate = tasaFila;
+        } else if (precioDolar > 0 && precioBcv > 0 && i === 1) {
+          config.bcvRate = precioBcv / precioDolar;
+        }
+
+        if (precioDolar === 0 && precioBcv > 0) {
+          precioDolar = precioBcv / config.bcvRate;
+        }
+
+        parsedProducts.push({
+          codigo,
+          producto,
+          categoria,
+          descripcion,
+          stock,
+          precioUsd: Number(precioDolar.toFixed(2)),
+          foto: fotoUrl
+        });
+      }
+
+      products = parsedProducts;
+      updateHeaderUI();
+      renderCategoryTabs();
+      applyFilters();
+    }
+
+    function updateHeaderUI() {
+      document.getElementById("display-bcv-rate").textContent = config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2 }) + " Bs.";
+      document.getElementById("stat-total-products").textContent = products.length;
+      document.getElementById("stat-in-stock").textContent = products.filter(p => p.stock > 0).length;
+      document.getElementById("cart-bcv-rate-label").textContent = config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2 }) + " Bs./$";
+    }
+
+    function setCurrencyMode(mode) {
+      currencyMode = mode;
+      document.querySelectorAll(".curr-btn").forEach(btn => {
+        btn.classList.remove("bg-samy-silver", "text-samy-deep");
+        btn.classList.add("text-slate-300");
+      });
+      document.getElementById("btn-curr-" + mode).classList.remove("text-slate-300");
+      document.getElementById("btn-curr-" + mode).classList.add("bg-samy-silver", "text-samy-deep");
+      applyFilters();
+    }
+
+    function renderCategoryTabs() {
+      const container = document.getElementById("category-tabs");
+      const categories = ["TODOS", ...new Set(products.map(p => p.categoria))];
+      container.innerHTML = categories.map(cat => {
+        const isActive = selectedCategory === cat;
+        const count = cat === "TODOS" ? products.length : products.filter(p => p.categoria === cat).length;
+        return `
+          <button onclick="selectCategory('${cat}')" class="whitespace-nowrap px-4 py-2 rounded font-industrial font-extrabold text-xs sm:text-sm uppercase transition border cursor-pointer ${isActive ? 'bg-samy-navy text-white border-samy-navy shadow-md' : 'bg-white text-slate-700 border-slate-300 hover:border-samy-navy'}">
+            <span>${cat}</span> <span class="text-[11px] px-1.5 py-0.2 rounded ${isActive ? 'bg-samy-silver text-samy-deep' : 'bg-slate-200 text-slate-700'}">${count}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function selectCategory(cat) {
+      selectedCategory = cat;
+      renderCategoryTabs();
+      applyFilters();
+    }
+
+    function clearSearch() {
+      document.getElementById("search-input").value = "";
+      applyFilters();
+    }
+
+    function resetFilters() {
+      selectedCategory = "TODOS";
+      document.getElementById("search-input").value = "";
+      renderCategoryTabs();
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const query = document.getElementById("search-input").value.trim().toLowerCase();
+      document.getElementById("clear-search-btn").classList.toggle("hidden", query.length === 0);
+
+      const filtered = products.filter(item => {
+        const matchesCat = selectedCategory === "TODOS" || item.categoria === selectedCategory;
+        const matchesQuery = !query ||
+          item.codigo.toLowerCase().includes(query) ||
+          item.producto.toLowerCase().includes(query) ||
+          item.categoria.toLowerCase().includes(query) ||
+          item.descripcion.toLowerCase().includes(query);
+        return matchesCat && matchesQuery;
+      });
+
+      renderProductGrid(filtered);
+    }
+
+    function renderProductGrid(list) {
+      const grid = document.getElementById("product-grid");
+      const emptyState = document.getElementById("empty-state");
+      document.getElementById("results-counter").textContent = `Mostrando ${list.length} productos`;
+
+      if (list.length === 0) {
+        grid.innerHTML = "";
+        emptyState.classList.remove("hidden");
+        return;
+      }
+      emptyState.classList.add("hidden");
+
+      grid.innerHTML = list.map(item => {
+        const stockBadge = item.stock <= 0 
+          ? `<span class="bg-red-100 text-red-700 text-[11px] font-bold px-2 py-0.5 rounded">Agotado</span>`
+          : `<span class="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded">Stock: ${item.stock}</span>`;
+
+        let priceHtml = "";
+        const bsVal = item.precioUsd * config.bcvRate;
+        if (currencyMode === "USD") {
+          priceHtml = `<div class="font-industrial font-black text-2xl text-samy-deep">$${item.precioUsd.toFixed(2)}</div>`;
+        } else if (currencyMode === "BS") {
+          priceHtml = `<div class="font-industrial font-black text-xl text-samy-deep">Bs. ${bsVal.toLocaleString("es-VE", {minimumFractionDigits: 2})}</div>`;
+        } else {
+          priceHtml = `
+            <div class="flex items-baseline justify-between gap-2">
+              <div class="font-industrial font-black text-2xl text-samy-deep">$${item.precioUsd.toFixed(2)}</div>
+              <div class="font-industrial font-extrabold text-sm text-slate-600">Bs. ${bsVal.toLocaleString("es-VE", {minimumFractionDigits: 2})}</div>
+            </div>`;
+        }
+
+        const imgSrc = item.foto && item.foto.startsWith("http") ? item.foto : "https://via.placeholder.com/250?text=Ferreteria";
+
+        return `
+          <article class="bg-white rounded-xl border border-slate-200 hover:border-samy-navy shadow-sm hover:shadow-xl transition flex flex-col overflow-hidden group">
+            <div class="px-3.5 pt-3 pb-2 flex items-center justify-between border-b border-slate-100 bg-slate-50/60">
+              <span class="bg-samy-navy text-white font-industrial font-black text-xs px-2.5 py-0.5 rounded">${item.codigo}</span>
+              ${stockBadge}
+            </div>
+            <div onclick="openProductModal('${item.codigo}')" class="relative bg-slate-50 h-48 flex items-center justify-center p-3 cursor-pointer overflow-hidden">
+              <img src="${imgSrc}" alt="${item.producto}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-300" onerror="this.src='https://via.placeholder.com/250?text=Sin+Imagen'" />
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+              <div class="text-[11px] font-bold uppercase text-samy-royal mb-0.5">${item.categoria}</div>
+              <h3 onclick="openProductModal('${item.codigo}')" class="font-industrial font-extrabold text-lg text-samy-deep uppercase leading-snug mb-1.5 cursor-pointer line-clamp-2">${item.producto}</h3>
+              <p class="text-xs text-slate-600 line-clamp-2 mb-4 flex-1 whitespace-pre-line">${item.descripcion}</p>
+              <div class="bg-slate-100 rounded-lg p-2.5 mb-3 border border-slate-200">${priceHtml}</div>
+              <div class="grid grid-cols-12 gap-2">
+                <button onclick="openProductModal('${item.codigo}')" class="col-span-5 bg-slate-700 hover:bg-samy-deep text-white font-industrial font-bold uppercase py-2 px-2 rounded text-xs transition cursor-pointer">Ficha</button>
+                <button onclick="addToCart('${item.codigo}')" ${item.stock <= 0 ? 'disabled' : ''} class="col-span-7 font-industrial font-extrabold uppercase py-2 px-2.5 rounded text-xs transition flex items-center justify-center gap-1 shadow-xs ${item.stock <= 0 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-samy-navy hover:bg-samy-royal text-white cursor-pointer'}">+ Cotizar</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function openProductModal(codigo) {
+      const item = products.find(p => p.codigo === codigo);
+      if (!item) return;
+
+      document.getElementById("modal-sku").textContent = item.codigo;
+      document.getElementById("modal-category").textContent = item.categoria;
+      document.getElementById("modal-title").textContent = item.producto;
+      document.getElementById("modal-desc").textContent = item.descripcion || "Sin descripción detallada.";
+      document.getElementById("modal-price-usd").textContent = "$" + item.precioUsd.toFixed(2);
+      document.getElementById("modal-price-bs").textContent = "Bs. " + (item.precioUsd * config.bcvRate).toLocaleString("es-VE", {minimumFractionDigits: 2});
+      document.getElementById("modal-img").src = item.foto && item.foto.startsWith("http") ? item.foto : "https://via.placeholder.com/300?text=Sin+Imagen";
+
+      const stockBadge = document.getElementById("modal-stock-badge");
+      stockBadge.className = item.stock <= 0 ? "inline-block text-xs font-bold px-2.5 py-1 rounded bg-red-100 text-red-700" : "inline-block text-xs font-bold px-2.5 py-1 rounded bg-emerald-100 text-emerald-800";
+      stockBadge.textContent = item.stock <= 0 ? "Agotado" : `Disponible: ${item.stock} unidades`;
+
+      const addBtn = document.getElementById("modal-add-btn");
+      addBtn.disabled = item.stock <= 0;
+      addBtn.onclick = () => { addToCart(item.codigo); closeProductModal(); };
+
+      document.getElementById("product-modal").classList.remove("hidden");
+    }
+
+    function closeProductModal() { document.getElementById("product-modal").classList.add("hidden"); }
+
+    function openSettingsModal() {
+      document.getElementById("input-bcv-rate").value = config.bcvRate;
+      document.getElementById("settings-modal").classList.remove("hidden");
+    }
+
+    function closeSettingsModal() { document.getElementById("settings-modal").classList.add("hidden"); }
+
+    function saveSettings(event) {
+      event.preventDefault();
+      const newRate = parseFloat(document.getElementById("input-bcv-rate").value);
+      if (newRate > 0) {
+        config.bcvRate = newRate;
+        localStorage.setItem("ferrepro_bcv", newRate);
+        updateHeaderUI();
+        applyFilters();
+        renderCart();
+        closeSettingsModal();
+        showToast("Tasa BCV actualizada con éxito.");
+      }
+    }
+
+    function toggleCartDrawer() {
+      const drawer = document.getElementById("cart-drawer");
+      const overlay = document.getElementById("cart-drawer-overlay");
+      const isClosed = drawer.classList.contains("translate-x-full");
+      if (isClosed) {
+        drawer.classList.remove("translate-x-full");
+        overlay.classList.remove("hidden");
+      } else {
+        drawer.classList.add("translate-x-full");
+        overlay.classList.add("hidden");
+      }
+    }
+
+    function addToCart(codigo) {
+      const prod = products.find(p => p.codigo === codigo);
+      if (!prod || prod.stock <= 0) return;
+
+      const existing = cart.find(c => c.codigo === codigo);
+      if (existing) {
+        if (existing.qty < prod.stock) {
+          existing.qty += 1;
+        } else {
+          showToast("Stock máximo alcanzado", "error");
+          return;
+        }
+      } else {
+        cart.push({ codigo: prod.codigo, qty: 1 });
+      }
+      localStorage.setItem("ferrepro_cart", JSON.stringify(cart));
+      renderCart();
+      showToast(`Agregado: ${prod.producto}`);
+    }
+
+    function updateCartQty(codigo, delta) {
+      const idx = cart.findIndex(c => c.codigo === codigo);
+      if (idx === -1) return;
+      const prod = products.find(p => p.codigo === codigo);
+      const nextQty = cart[idx].qty + delta;
+      if (nextQty <= 0) {
+        cart.splice(idx, 1);
+      } else if (nextQty <= prod.stock) {
+        cart[idx].qty = nextQty;
+      }
+      localStorage.setItem("ferrepro_cart", JSON.stringify(cart));
+      renderCart();
+    }
+
+    function renderCart() {
+      const container = document.getElementById("cart-items-container");
+      let totalItems = 0;
+      let totalUsd = 0;
+
+      if (cart.length === 0) {
+        container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400"><p class="font-industrial font-bold text-base uppercase text-slate-600">Tu lista está vacía</p></div>`;
+      } else {
+        container.innerHTML = cart.map(entry => {
+          const prod = products.find(p => p.codigo === entry.codigo);
+          if (!prod) return "";
+          const lineUsd = prod.precioUsd * entry.qty;
+          totalItems += entry.qty;
+          totalUsd += lineUsd;
+          const bsLine = lineUsd * config.bcvRate;
+          return `
+            <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <span class="bg-samy-navy text-white font-bold text-[10px] px-1.5 py-0.2 rounded">${prod.codigo}</span>
+                <div class="font-industrial font-extrabold text-sm text-samy-deep uppercase truncate mt-1">${prod.producto}</div>
+                <div class="text-xs font-bold text-slate-700">$${lineUsd.toFixed(2)} | Bs. ${bsLine.toLocaleString("es-VE", {minimumFractionDigits: 2})}</div>
+              </div>
+              <div class="flex items-center bg-slate-100 rounded border border-slate-300">
+                <button onclick="updateCartQty('${prod.codigo}', -1)" class="w-7 h-7 font-bold text-slate-700 hover:bg-slate-200 cursor-pointer">−</button>
+                <span class="w-8 text-center text-xs font-extrabold">${entry.qty}</span>
+                <button onclick="updateCartQty('${prod.codigo}', 1)" class="w-7 h-7 font-bold text-slate-700 hover:bg-slate-200 cursor-pointer">+</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      document.getElementById("cart-badge-mobile").textContent = totalItems;
+      document.getElementById("cart-summary-desktop").textContent = `${totalItems} items • $${totalUsd.toFixed(2)}`;
+      document.getElementById("cart-total-usd").textContent = "$" + totalUsd.toFixed(2);
+      document.getElementById("cart-total-bs").textContent = "Bs. " + (totalUsd * config.bcvRate).toLocaleString("es-VE", {minimumFractionDigits: 2});
+    }
+
+    function sendWhatsAppOrder() {
+      if (cart.length === 0) {
+        showToast("Agrega productos a tu cotización primero.", "error");
+        return;
+      }
+      const customer = document.getElementById("customer-name").value.trim() || "Cliente";
+      let totalUsd = 0;
+      const lines = cart.map((entry, index) => {
+        const prod = products.find(p => p.codigo === entry.codigo);
+        if (!prod) return "";
+        const subUsd = prod.precioUsd * entry.qty;
+        totalUsd += subUsd;
+        return `${index + 1}. [${prod.codigo}] ${prod.producto} - Cant: ${entry.qty} ($${subUsd.toFixed(2)})`;
+      }).filter(Boolean);
+
+      const msg = `*PEDIDO - Catálogo Digital Hierro Sammy*\n` +
+        `👤 *Cliente:* ${customer}\n` +
+        `💱 *Tasa BCV:* ${config.bcvRate.toLocaleString("es-VE", {minimumFractionDigits: 2})} Bs.\n` +
+        `----------------------------------\n` +
+        lines.join("\n") +
+        `\n----------------------------------\n` +
+        `💰 *TOTAL USD:* $${totalUsd.toFixed(2)}\n` +
+        `🇻🇪 *TOTAL BS:* Bs. ${(totalUsd * config.bcvRate).toLocaleString("es-VE", {minimumFractionDigits: 2})}`;
+
+      window.open(`https://wa.me/${config.whatsappPhone}?text=` + encodeURIComponent(msg), "_blank", "noopener,noreferrer");
+    }
+
+    function showToast(message, type = "success") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `toast-enter pointer-events-auto border-l-4 ${type === "error" ? "bg-red-600 text-white border-red-200" : "bg-samy-dark text-white border-samy-silver"} px-4 py-3 rounded shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 max-w-sm`;
+      toast.innerHTML = `<span>${type === "error" ? "⚠" : "✔"}</span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    window.onload = initApp;
+  </script>
+</body>
+</html>
