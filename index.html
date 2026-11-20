@@ -98,12 +98,9 @@
     <div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         <span class="inline-flex items-center gap-1.5 bg-samy-steel px-2.5 py-1 rounded border border-slate-600/60">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="bcv-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span class="text-slate-200 font-medium">Tasa BCV:</span>
-          <strong class="text-samy-silver font-industrial text-sm sm:text-base" id="display-bcv-rate">36,50 Bs.</strong>
-          <button onclick="openSettingsModal()" title="Editar Tasa BCV" class="ml-1 text-xs bg-slate-700 hover:bg-samy-silver hover:text-samy-deep text-white px-1.5 py-0.5 rounded transition font-semibold cursor-pointer">
-            Editar Tasa
-          </button>
+          <strong class="text-samy-silver font-industrial text-sm sm:text-base" id="display-bcv-rate">Cargando...</strong>
         </span>
         <span class="hidden lg:inline text-slate-500">|</span>
         <span class="hidden lg:inline text-slate-300">Catálogo Digital Ferretero & Estructuras Metálicas</span>
@@ -315,26 +312,6 @@
     </div>
   </div>
 
-  <!-- MODAL: SETTINGS (TASA BCV) -->
-  <div id="settings-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-md w-full overflow-hidden shadow-2xl border-2 border-samy-navy">
-      <div class="bg-samy-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-samy-chrome">
-        <h3 class="font-industrial font-extrabold text-lg uppercase">⚙ Ajustar Tasa BCV</h3>
-        <button onclick="closeSettingsModal()" class="text-slate-300 hover:text-white text-xl font-bold px-2 cursor-pointer">✕</button>
-      </div>
-      <form onsubmit="saveSettings(event)" class="p-5 space-y-4">
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Tasa de Cambio BCV (Bs. por 1 USD)</label>
-          <input type="number" step="0.01" min="0.01" id="input-bcv-rate" required class="w-full border-2 border-slate-300 focus:border-samy-navy rounded px-3 py-2 font-bold text-base focus:outline-none" />
-        </div>
-        <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
-          <button type="button" onclick="closeSettingsModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded text-xs cursor-pointer">Cancelar</button>
-          <button type="submit" class="bg-samy-navy hover:bg-samy-royal text-white font-industrial font-extrabold uppercase px-5 py-2 rounded text-sm shadow cursor-pointer">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- CART DRAWER -->
   <div id="cart-drawer-overlay" onclick="toggleCartDrawer()" class="fixed inset-0 z-50 hidden bg-slate-950/60 transition-opacity"></div>
   <aside id="cart-drawer" class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col border-l-4 border-samy-navy">
@@ -372,14 +349,14 @@
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- JAVASCRIPT ROBUSTO PARA CSV CON SALTOS DE LÍNEA -->
+  <!-- JAVASCRIPT ROBUSTO PARA CSV Y ACTUALIZACIÓN AUTOMÁTICA BCV -->
   <script>
     let products = [];
     let cart = [];
     let selectedCategory = "TODOS";
     let currencyMode = "BOTH";
     let config = {
-      bcvRate: 916.02,
+      bcvRate: 917.78,
       whatsappPhone: "584144077442"
     };
 
@@ -387,12 +364,50 @@
       const savedCart = localStorage.getItem("ferrepro_cart");
       if (savedCart) { try { cart = JSON.parse(savedCart) || []; } catch (e) { cart = []; } }
 
-      const savedRate = localStorage.getItem("ferrepro_bcv");
-      if (savedRate) { config.bcvRate = parseFloat(savedRate) || 916.02; }
-
       await loadCatalogCsv();
+      await fetchBcvRateAuto();
+
       updateHeaderUI();
       renderCategoryTabs();
+      applyFilters();
+      renderCart();
+    }
+
+    async function fetchBcvRateAuto() {
+      const endpoints = [
+        async () => {
+          const res = await fetch(`https://ve.dolarapi.com/v1/dolares/oficial?nocache=${Date.now()}`, { cache: "no-store" });
+          if (!res.ok) throw new Error("Error en dolarapi");
+          const data = await res.json();
+          const val = parseFloat(data?.promedio ?? data?.venta ?? data?.compra ?? 0);
+          return val > 0 ? val : null;
+        },
+        async () => {
+          const res = await fetch(`https://pydolarve.org/api/v1/dollar?page=bcv&nocache=${Date.now()}`, { cache: "no-store" });
+          if (!res.ok) throw new Error("Error en pydolarve");
+          const data = await res.json();
+          const val = parseFloat(data?.monitors?.usd?.price ?? data?.price ?? 0);
+          return val > 0 ? val : null;
+        }
+      ];
+
+      for (const getRate of endpoints) {
+        try {
+          const rate = await getRate();
+          if (rate && !Number.isNaN(rate) && rate > 0) {
+            config.bcvRate = Number(rate.toFixed(4));
+            updateHeaderUI();
+            applyFilters();
+            renderCart();
+            return;
+          }
+        } catch (err) {
+          console.warn("Fuente BCV alternativa no disponible:", err);
+        }
+      }
+
+      // Si las APIs externas no responden, se mantiene la tasa del CSV o el valor por defecto
+      updateHeaderUI();
       applyFilters();
       renderCart();
     }
@@ -492,10 +507,10 @@
     }
 
     function updateHeaderUI() {
-      document.getElementById("display-bcv-rate").textContent = config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2 }) + " Bs.";
+      document.getElementById("display-bcv-rate").textContent = config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bs.";
       document.getElementById("stat-total-products").textContent = products.length;
       document.getElementById("stat-in-stock").textContent = products.filter(p => p.stock > 0).length;
-      document.getElementById("cart-bcv-rate-label").textContent = config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2 }) + " Bs./$";
+      document.getElementById("cart-bcv-rate-label").textContent = config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bs./$";
     }
 
     function setCurrencyMode(mode) {
@@ -639,27 +654,6 @@
     }
 
     function closeProductModal() { document.getElementById("product-modal").classList.add("hidden"); }
-
-    function openSettingsModal() {
-      document.getElementById("input-bcv-rate").value = config.bcvRate;
-      document.getElementById("settings-modal").classList.remove("hidden");
-    }
-
-    function closeSettingsModal() { document.getElementById("settings-modal").classList.add("hidden"); }
-
-    function saveSettings(event) {
-      event.preventDefault();
-      const newRate = parseFloat(document.getElementById("input-bcv-rate").value);
-      if (newRate > 0) {
-        config.bcvRate = newRate;
-        localStorage.setItem("ferrepro_bcv", newRate);
-        updateHeaderUI();
-        applyFilters();
-        renderCart();
-        closeSettingsModal();
-        showToast("Tasa BCV actualizada con éxito.");
-      }
-    }
 
     function toggleCartDrawer() {
       const drawer = document.getElementById("cart-drawer");
