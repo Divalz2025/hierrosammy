@@ -213,9 +213,9 @@
           <div class="text-[11px] text-samy-silver mt-0.5">Cargados desde CSV</div>
         </div>
         <div class="bg-samy-steel/90 border-l-4 border-emerald-400 p-4 rounded-r shadow-lg backdrop-blur-xs">
-          <div class="text-slate-300 text-xs font-semibold uppercase">En Stock</div>
+          <div class="text-slate-300 text-xs font-semibold uppercase">Disponibilidad</div>
           <div id="stat-in-stock" class="font-industrial font-black text-2xl sm:text-3xl text-emerald-400 mt-0.5">0</div>
-          <div class="text-[11px] text-slate-200 mt-0.5">Disponibles</div>
+          <div class="text-[11px] text-slate-200 mt-0.5">Productos Disponibles</div>
         </div>
       </div>
     </div>
@@ -287,7 +287,7 @@
         </div>
         <div class="sm:col-span-7 space-y-3">
           <h3 id="modal-title" class="font-industrial font-black text-2xl text-samy-deep uppercase leading-tight">Nombre Producto</h3>
-          <div id="modal-stock-badge" class="inline-block text-xs font-bold px-2.5 py-1 rounded">Stock</div>
+          <div id="modal-stock-badge" class="inline-block text-xs font-bold px-2.5 py-1 rounded">Disponible</div>
           <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
             <div class="text-[11px] font-bold uppercase text-slate-500 mb-1">Descripción</div>
             <p id="modal-desc" class="text-sm text-slate-800 font-medium leading-relaxed whitespace-pre-line"></p>
@@ -385,14 +385,14 @@
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- JAVASCRIPT ROBUSTO PARA CSV Y TASA DESDE CATALOGOF.CSV -->
+  <!-- JAVASCRIPT ROBUSTO PARA CSV, TASA DESDE CATALOGOF.CSV Y ESTADOS DE STOCK -->
   <script>
     let products = [];
     let cart = [];
     let selectedCategory = "TODOS";
     let currencyMode = "BOTH";
     let config = {
-      bcvRate: 918.77, // Valor de respaldo en caso de que la columna esté vacía
+      bcvRate: 918.77,
       whatsappPhone: "584144077442"
     };
 
@@ -423,17 +423,14 @@
       }
     }
 
-    // Helper para convertir formatos numéricos (ej: "1.250,50", "918,77", "918.77", "Bs. 918,77")
     function parseNumericValue(rawStr) {
       if (!rawStr) return 0;
       let cleaned = String(rawStr).replace(/[^\d.,-]/g, "").trim();
       if (!cleaned) return 0;
 
-      // Si tiene coma y punto (ej. 1.250,50), el punto es separador de miles y la coma es decimal
       if (cleaned.includes(".") && cleaned.includes(",")) {
         cleaned = cleaned.replace(/\./g, "").replace(",", ".");
       } else if (cleaned.includes(",")) {
-        // Si solo tiene coma (ej. 918,77), la coma es decimal
         cleaned = cleaned.replace(",", ".");
       }
       const num = parseFloat(cleaned);
@@ -441,10 +438,7 @@
     }
 
     function parseCsvRobust(text) {
-      // Eliminar BOM UTF-8 si Excel lo agregó al guardar
       const cleanText = text.replace(/^\uFEFF/, "");
-
-      // Detectar automáticamente el delimitador (; o ,) según la primera línea
       const firstLine = cleanText.split(/\r?\n/)[0] || "";
       const delimiter = (firstLine.match(/;/g) || []).length >= (firstLine.match(/,/g) || []).length ? ";" : ",";
 
@@ -486,11 +480,10 @@
 
       if (rows.length < 2) return;
 
-      // 1. Identificar el índice de la columna "TASA DE CAMBIO" desde los encabezados
+      // Leer columna TASA DE CAMBIO desde Catalogof.csv
       const headers = rows[0].map(h => h.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim());
       const tasaColIndex = headers.findIndex(h => h.includes("TASA DE CAMBIO") || h === "TASA" || h.includes("TASA BCV"));
 
-      // 2. Buscar el primer valor numérico válido en la columna "TASA DE CAMBIO"
       if (tasaColIndex !== -1) {
         for (let i = 1; i < rows.length; i++) {
           const rawTasa = rows[i][tasaColIndex];
@@ -502,7 +495,6 @@
         }
       }
 
-      // 3. Procesar los productos del catálogo
       const parsedProducts = [];
       for (let i = 1; i < rows.length; i++) {
         const cols = rows[i];
@@ -534,6 +526,31 @@
       }
 
       products = parsedProducts;
+    }
+
+    // Devuelve el estado del producto según su stock real y la cantidad ya agregada en cotización
+    // Estados posibles: "AGOTADO" | "LIMITE" | "DISPONIBLE"
+    function getProductStockStatus(item) {
+      if (!item || item.stock <= 0) {
+        return "AGOTADO";
+      }
+      const inCartEntry = cart.find(c => c.codigo === item.codigo);
+      const inCartQty = inCartEntry ? inCartEntry.qty : 0;
+      if (inCartQty >= item.stock) {
+        return "LIMITE";
+      }
+      return "DISPONIBLE";
+    }
+
+    function getStockBadgeHtml(status) {
+      if (status === "AGOTADO") {
+        return `<span class="bg-red-100 text-red-700 border border-red-200 text-[11px] font-bold px-2.5 py-0.5 rounded uppercase tracking-wide">Agotado</span>`;
+      }
+      if (status === "LIMITE") {
+        // Naranja oscuro casi rojo para máxima legibilidad y alerta clara
+        return `<span class="bg-orange-100 text-[#9A3412] border border-orange-300 text-[11px] font-extrabold px-2.5 py-0.5 rounded uppercase tracking-wide">Límite</span>`;
+      }
+      return `<span class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] font-bold px-2.5 py-0.5 rounded uppercase tracking-wide">Disponible</span>`;
     }
 
     function updateHeaderUI() {
@@ -616,9 +633,18 @@
       emptyState.classList.add("hidden");
 
       grid.innerHTML = list.map(item => {
-        const stockBadge = item.stock <= 0 
-          ? `<span class="bg-red-100 text-red-700 text-[11px] font-bold px-2 py-0.5 rounded">Agotado</span>`
-          : `<span class="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded">Stock: ${item.stock}</span>`;
+        const status = getProductStockStatus(item);
+        const stockBadge = getStockBadgeHtml(status);
+        const isBlocked = status !== "DISPONIBLE";
+
+        let quoteBtnHtml = "";
+        if (status === "AGOTADO") {
+          quoteBtnHtml = `<button disabled class="col-span-7 font-industrial font-extrabold uppercase py-2 px-2.5 rounded text-xs bg-slate-200 text-slate-400 cursor-not-allowed">Agotado</button>`;
+        } else if (status === "LIMITE") {
+          quoteBtnHtml = `<button disabled title="Alcanzaste el límite disponible para este producto" class="col-span-7 font-industrial font-extrabold uppercase py-2 px-2.5 rounded text-xs bg-orange-100 text-[#9A3412] border border-orange-300 cursor-not-allowed">Límite</button>`;
+        } else {
+          quoteBtnHtml = `<button onclick="addToCart('${item.codigo}')" class="col-span-7 font-industrial font-extrabold uppercase py-2 px-2.5 rounded text-xs transition flex items-center justify-center gap-1 shadow-xs bg-samy-navy hover:bg-samy-royal text-white cursor-pointer">+ Cotizar</button>`;
+        }
 
         let priceHtml = "";
         const bsVal = item.precioUsd * config.bcvRate;
@@ -637,7 +663,7 @@
         const imgSrc = item.foto && item.foto.startsWith("http") ? item.foto : "https://via.placeholder.com/250?text=Ferreteria";
 
         return `
-          <article class="bg-white rounded-xl border border-slate-200 hover:border-samy-navy shadow-sm hover:shadow-xl transition flex flex-col overflow-hidden group">
+          <article class="bg-white rounded-xl border ${status === 'LIMITE' ? 'border-orange-300' : 'border-slate-200'} hover:border-samy-navy shadow-sm hover:shadow-xl transition flex flex-col overflow-hidden group">
             <div class="px-3.5 pt-3 pb-2 flex items-center justify-between border-b border-slate-100 bg-slate-50/60">
               <span class="bg-samy-navy text-white font-industrial font-black text-xs px-2.5 py-0.5 rounded">${item.codigo}</span>
               ${stockBadge}
@@ -652,7 +678,7 @@
               <div class="bg-slate-100 rounded-lg p-2.5 mb-3 border border-slate-200">${priceHtml}</div>
               <div class="grid grid-cols-12 gap-2">
                 <button onclick="openProductModal('${item.codigo}')" class="col-span-5 bg-slate-700 hover:bg-samy-deep text-white font-industrial font-bold uppercase py-2 px-2 rounded text-xs transition cursor-pointer">Ficha</button>
-                <button onclick="addToCart('${item.codigo}')" ${item.stock <= 0 ? 'disabled' : ''} class="col-span-7 font-industrial font-extrabold uppercase py-2 px-2.5 rounded text-xs transition flex items-center justify-center gap-1 shadow-xs ${item.stock <= 0 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-samy-navy hover:bg-samy-royal text-white cursor-pointer'}">+ Cotizar</button>
+                ${quoteBtnHtml}
               </div>
             </div>
           </article>
@@ -664,6 +690,8 @@
       const item = products.find(p => p.codigo === codigo);
       if (!item) return;
 
+      const status = getProductStockStatus(item);
+
       document.getElementById("modal-sku").textContent = item.codigo;
       document.getElementById("modal-category").textContent = item.categoria;
       document.getElementById("modal-title").textContent = item.producto;
@@ -673,12 +701,32 @@
       document.getElementById("modal-img").src = item.foto && item.foto.startsWith("http") ? item.foto : "https://via.placeholder.com/300?text=Sin+Imagen";
 
       const stockBadge = document.getElementById("modal-stock-badge");
-      stockBadge.className = item.stock <= 0 ? "inline-block text-xs font-bold px-2.5 py-1 rounded bg-red-100 text-red-700" : "inline-block text-xs font-bold px-2.5 py-1 rounded bg-emerald-100 text-emerald-800";
-      stockBadge.textContent = item.stock <= 0 ? "Agotado" : `Disponible: ${item.stock} unidades`;
+      if (status === "AGOTADO") {
+        stockBadge.className = "inline-block text-xs font-bold px-2.5 py-1 rounded bg-red-100 text-red-700 border border-red-200 uppercase";
+        stockBadge.textContent = "Agotado";
+      } else if (status === "LIMITE") {
+        stockBadge.className = "inline-block text-xs font-extrabold px-2.5 py-1 rounded bg-orange-100 text-[#9A3412] border border-orange-300 uppercase";
+        stockBadge.textContent = "Límite";
+      } else {
+        stockBadge.className = "inline-block text-xs font-bold px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase";
+        stockBadge.textContent = "Disponible";
+      }
 
       const addBtn = document.getElementById("modal-add-btn");
-      addBtn.disabled = item.stock <= 0;
-      addBtn.onclick = () => { addToCart(item.codigo); closeProductModal(); };
+      if (status === "AGOTADO") {
+        addBtn.disabled = true;
+        addBtn.textContent = "Agotado";
+        addBtn.className = "flex-1 bg-slate-200 text-slate-400 font-industrial font-extrabold uppercase py-2.5 px-4 rounded text-sm cursor-not-allowed";
+      } else if (status === "LIMITE") {
+        addBtn.disabled = true;
+        addBtn.textContent = "Límite";
+        addBtn.className = "flex-1 bg-orange-100 text-[#9A3412] border border-orange-300 font-industrial font-extrabold uppercase py-2.5 px-4 rounded text-sm cursor-not-allowed";
+      } else {
+        addBtn.disabled = false;
+        addBtn.textContent = "Agregar a Cotización";
+        addBtn.className = "flex-1 bg-samy-navy hover:bg-samy-royal text-white font-industrial font-extrabold uppercase py-2.5 px-4 rounded text-sm transition flex items-center justify-center gap-2 shadow cursor-pointer";
+        addBtn.onclick = () => { addToCart(item.codigo); closeProductModal(); };
+      }
 
       document.getElementById("product-modal").classList.remove("hidden");
     }
@@ -701,21 +749,29 @@
 
     function addToCart(codigo) {
       const prod = products.find(p => p.codigo === codigo);
-      if (!prod || prod.stock <= 0) return;
+      if (!prod || prod.stock <= 0) {
+        showToast("Producto agotado", "error");
+        return;
+      }
 
       const existing = cart.find(c => c.codigo === codigo);
+      const currentQty = existing ? existing.qty : 0;
+
+      if (currentQty + 1 > prod.stock) {
+        showToast("Límite alcanzado para este producto", "limit");
+        applyFilters();
+        return;
+      }
+
       if (existing) {
-        if (existing.qty < prod.stock) {
-          existing.qty += 1;
-        } else {
-          showToast("Stock máximo alcanzado", "error");
-          return;
-        }
+        existing.qty += 1;
       } else {
         cart.push({ codigo: prod.codigo, qty: 1 });
       }
+
       localStorage.setItem("ferrepro_cart", JSON.stringify(cart));
       renderCart();
+      applyFilters();
       showToast(`Agregado: ${prod.producto}`);
     }
 
@@ -723,14 +779,23 @@
       const idx = cart.findIndex(c => c.codigo === codigo);
       if (idx === -1) return;
       const prod = products.find(p => p.codigo === codigo);
+      if (!prod) return;
+
       const nextQty = cart[idx].qty + delta;
       if (nextQty <= 0) {
         cart.splice(idx, 1);
-      } else if (nextQty <= prod.stock) {
+      } else if (nextQty > prod.stock) {
+        showToast("Límite alcanzado para este producto", "limit");
+        renderCart();
+        applyFilters();
+        return;
+      } else {
         cart[idx].qty = nextQty;
       }
+
       localStorage.setItem("ferrepro_cart", JSON.stringify(cart));
       renderCart();
+      applyFilters();
     }
 
     function renderCart() {
@@ -748,17 +813,26 @@
           totalItems += entry.qty;
           totalUsd += lineUsd;
           const bsLine = lineUsd * config.bcvRate;
+          const reachedLimit = entry.qty >= prod.stock;
+
           return `
-            <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+            <div class="bg-white p-3 rounded-lg border ${reachedLimit ? 'border-orange-300' : 'border-slate-200'} flex items-center justify-between gap-3">
               <div class="flex-1 min-w-0">
-                <span class="bg-samy-navy text-white font-bold text-[10px] px-1.5 py-0.2 rounded">${prod.codigo}</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="bg-samy-navy text-white font-bold text-[10px] px-1.5 py-0.2 rounded">${prod.codigo}</span>
+                  ${reachedLimit ? `<span class="bg-orange-100 text-[#9A3412] border border-orange-300 font-extrabold text-[10px] px-1.5 py-0.2 rounded uppercase">Límite</span>` : ''}
+                </div>
                 <div class="font-industrial font-extrabold text-sm text-samy-deep uppercase truncate mt-1">${prod.producto}</div>
                 <div class="text-xs font-bold text-slate-700">$${lineUsd.toFixed(2)} | Bs. ${bsLine.toLocaleString("es-VE", {minimumFractionDigits: 2})}</div>
               </div>
               <div class="flex items-center bg-slate-100 rounded border border-slate-300">
                 <button onclick="updateCartQty('${prod.codigo}', -1)" class="w-7 h-7 font-bold text-slate-700 hover:bg-slate-200 cursor-pointer">−</button>
                 <span class="w-8 text-center text-xs font-extrabold">${entry.qty}</span>
-                <button onclick="updateCartQty('${prod.codigo}', 1)" class="w-7 h-7 font-bold text-slate-700 hover:bg-slate-200 cursor-pointer">+</button>
+                <button 
+                  onclick="updateCartQty('${prod.codigo}', 1)" 
+                  ${reachedLimit ? 'disabled title="Límite alcanzado"' : ''} 
+                  class="w-7 h-7 font-bold ${reachedLimit ? 'text-orange-400 cursor-not-allowed bg-orange-50/50' : 'text-slate-700 hover:bg-slate-200 cursor-pointer'}"
+                >+</button>
               </div>
             </div>
           `;
@@ -771,7 +845,6 @@
       document.getElementById("cart-total-bs").textContent = "Bs. " + (totalUsd * config.bcvRate).toLocaleString("es-VE", {minimumFractionDigits: 2});
     }
 
-    /* VALIDACIÓN EN TIEMPO REAL DE TU NOMBRE / EMPRESA Y CÉDULA / RIF */
     function validateQuoteForm() {
       const nameInput = document.getElementById("customer-name");
       const idInput = document.getElementById("customer-id");
@@ -814,7 +887,6 @@
       const customerName = nameInput.value.trim();
       const customerId = idInput.value.trim();
 
-      /* SI ESTÁ DESACTIVADO (CAMPOS VACÍOS), MOSTRAR MENSAJE Y RESALTAR CAMPOS */
       if (!customerName || !customerId) {
         let missingFields = [];
         if (!customerName) {
@@ -871,8 +943,20 @@
     function showToast(message, type = "success") {
       const container = document.getElementById("toast-container");
       const toast = document.createElement("div");
-      toast.className = `toast-enter pointer-events-auto border-l-4 ${type === "error" ? "bg-red-600 text-white border-red-200" : "bg-samy-dark text-white border-samy-silver"} px-4 py-3 rounded shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 max-w-sm`;
-      toast.innerHTML = `<span>${type === "error" ? "⚠" : "✔"}</span><span>${message}</span>`;
+
+      let styleClass = "bg-samy-dark text-white border-samy-silver";
+      let icon = "✔";
+
+      if (type === "error") {
+        styleClass = "bg-red-600 text-white border-red-200";
+        icon = "⚠";
+      } else if (type === "limit") {
+        styleClass = "bg-[#9A3412] text-white border-orange-200";
+        icon = "⛔";
+      }
+
+      toast.className = `toast-enter pointer-events-auto border-l-4 ${styleClass} px-4 py-3 rounded shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 max-w-sm`;
+      toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
       container.appendChild(toast);
       setTimeout(() => toast.remove(), 3500);
     }
