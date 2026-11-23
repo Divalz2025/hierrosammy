@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HIERRO SAMMY — Catálogo Digital Ferretero</title>
-  <!-- Favicon con el logo oficial -->
-  <link rel="icon" type="image/png" href="https://i.ibb.co/9kJ1CHYC/logo-transparete.png" />
+  <title>CATÁLOGO DIGITAL FERRETERO | HIERRO SAMMY</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -19,16 +17,12 @@
             sans: ['Inter', 'sans-serif'],
           },
           colors: {
-            samy: {
-              navy: '#153A6E',      /* Azul marino principal del logo */
-              royal: '#1E4E8C',     /* Azul industrial medio para hovers */
-              deep: '#0B1D36',      /* Azul oscuro profundo para fondos/headers */
-              dark: '#0F2544',      /* Azul pizarra oscuro */
-              steel: '#1E3557',     /* Azul acero para tarjetas oscuras */
-              silver: '#CBD5E1',    /* Plateado claro metálico */
-              chrome: '#94A3B8',    /* Gris acero cromado */
-              accent: '#38BDF8',    /* Azul celeste metálico para acentos */
-              light: '#F1F5F9',
+            ingco: {
+              yellow: '#F5A623',
+              orange: '#FF7A00',
+              black: '#111111',
+              dark: '#1A1A1A',
+              steel: '#262626',
             }
           }
         }
@@ -38,273 +32,129 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #F1F5F9;
-      color: #0F172A;
+      background-color: #F3F4F6;
+      color: #111111;
       overflow-x: hidden;
     }
-    h1, h2, h3, h4, .font-industrial {
-      font-family: 'Barlow', sans-serif;
-      letter-spacing: -0.01em;
-    }
-    /* Franja industrial metálica azul y plata */
-    .samy-metal-stripe {
-      background: repeating-linear-gradient(
-        -45deg,
-        #153A6E,
-        #153A6E 14px,
-        #CBD5E1 14px,
-        #CBD5E1 28px
-      );
-    }
-    /* Degradado acero y azul marino para el Hero */
-    .samy-hero-bg {
-      background-color: #0B1D36;
-      background-image: 
-        radial-gradient(circle at 85% 20%, rgba(148, 163, 184, 0.22) 0%, transparent 48%),
-        linear-gradient(135deg, #09172B 0%, #153A6E 65%, #1E293B 100%);
-    }
-    /* Contenedor con brillo sutil para resaltar el logo sobre fondos oscuros */
-    .logo-glow-wrapper {
-      background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(226,232,240,0.92));
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,1);
-    }
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0B1D36;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #64748B;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94A3B8;
-    }
-    @keyframes slideInUp {
-      from { transform: translateY(100%); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .toast-enter {
-      animation: slideInUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
+    h1, h2, h3, h4, .font-industrial { font-family: 'Barlow', sans-serif; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
   <!-- TOP BAR -->
-  <div class="bg-samy-deep text-white border-b border-slate-800 text-xs sm:text-sm">
-    <div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
-      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-        <span class="inline-flex items-center gap-1.5 bg-samy-steel px-2.5 py-1 rounded border border-slate-600/60">
-          <span id="bcv-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="text-slate-200 font-medium">Tasa BCV:</span>
-          <strong class="text-samy-silver font-industrial text-sm sm:text-base" id="display-bcv-rate">Cargando...</strong>
-        </span>
-        <span class="hidden lg:inline text-slate-500">|</span>
-        <span class="hidden lg:inline text-slate-300">Catálogo Digital Ferretero & Estructuras Metálicas</span>
-      </div>
-
+  <div class="bg-ingco-black text-white border-b border-neutral-800 text-xs sm:text-sm py-2 px-3 sm:px-4">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-2">
-        <div class="flex items-center bg-samy-steel p-0.5 rounded border border-slate-600/60" role="group">
-          <button onclick="setCurrencyMode('BOTH')" id="btn-curr-BOTH" class="curr-btn px-2 py-1 rounded text-xs font-bold transition bg-samy-silver text-samy-deep">
-            USD + Bs.
-          </button>
-          <button onclick="setCurrencyMode('USD')" id="btn-curr-USD" class="curr-btn px-2 py-1 rounded text-xs font-bold transition text-slate-300 hover:text-white">
-            Solo $
-          </button>
-          <button onclick="setCurrencyMode('BS')" id="btn-curr-BS" class="curr-btn px-2 py-1 rounded text-xs font-bold transition text-slate-300 hover:text-white">
-            Solo Bs.
-          </button>
-        </div>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-bold text-ingco-yellow">CATÁLOGO EN TIEMPO REAL</span>
+        <span id="catalog-source-badge" class="hidden sm:inline-block text-[11px] bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded font-mono">
+          Catalogof.csv
+        </span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span>Tasa BCV: <strong id="top-bcv-rate" class="text-ingco-yellow">914,02 Bs.</strong></span>
+        <button type="button" onclick="loadCatalog(true)" class="bg-neutral-800 hover:bg-neutral-700 text-white font-bold px-2.5 py-1 rounded transition text-xs cursor-pointer">
+          ↻ Actualizar
+        </button>
       </div>
     </div>
   </div>
 
   <!-- HEADER -->
-  <header class="bg-samy-dark text-white sticky top-0 z-40 shadow-xl border-b-4 border-samy-chrome">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
-      <div class="flex items-center justify-between w-full md:w-auto">
-        <a href="#" onclick="resetFilters(); return false;" class="flex items-center gap-3.5 group">
-          <!-- LOGO OFICIAL EN EL TÍTULO -->
-          <div class="logo-glow-wrapper px-2.5 py-1.5 rounded-lg border border-slate-300 flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
-            <img 
-              src="https://i.ibb.co/9kJ1CHYC/logo-transparete.png" 
-              alt="Logo Hierro Samy" 
-              class="h-11 sm:h-14 w-auto object-contain"
-            />
-          </div>
-          <div>
-            <div id="store-name-header" class="font-industrial font-black text-xl sm:text-2xl tracking-wide uppercase leading-none text-white">
-              HIERRO <span class="text-samy-silver">SAMMY, C.A</span>
-            </div>
-            <div class="text-[11px] text-samy-chrome font-bold tracking-widest uppercase mt-1">
-             J-50055307-2
-            </div>
-          </div>
-        </a>
-
-        <button onclick="toggleCartDrawer()" class="md:hidden relative bg-samy-silver text-samy-deep p-2.5 rounded font-bold flex items-center gap-1.5 shadow">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          <span id="cart-badge-mobile" class="bg-samy-navy text-white text-xs font-extrabold px-1.5 py-0.5 rounded-full">0</span>
-        </button>
-      </div>
-
-      <div class="w-full md:flex-1 md:max-w-xl relative">
-        <div class="relative flex items-center">
-          <input
-            type="text"
-            id="search-input"
-            oninput="applyFilters()"
-            placeholder="Buscar por código SKU, nombre, categoría, descripción..."
-            class="w-full bg-white text-slate-900 placeholder-slate-500 pl-4 pr-20 py-2.5 rounded font-medium text-sm border-2 border-transparent focus:border-samy-chrome focus:outline-none shadow-inner"
-          />
-          <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-11 text-slate-400 hover:text-samy-navy p-1">✕</button>
-          <span class="absolute right-0 top-0 bottom-0 bg-samy-navy text-white px-3.5 rounded-r flex items-center justify-center font-bold border-l border-slate-600">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18a7.5 7.5 0 006.15-3.35z" />
-            </svg>
-          </span>
+  <header class="bg-ingco-dark text-white border-b-4 border-ingco-yellow py-5 px-3 sm:px-4 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>
+        <div class="font-industrial font-black text-2xl sm:text-3xl uppercase tracking-tight">
+          HIERRO<span class="text-ingco-yellow">SAMMY</span> <span class="text-neutral-400 text-lg sm:text-xl">| Catálogo Ferretero</span>
         </div>
+        <p class="text-xs text-neutral-400 mt-1">Consulta precios en USD y Bs., filtra por categoría y solicita tu pedido directo por WhatsApp.</p>
       </div>
 
-      <div class="hidden md:flex items-center gap-3">
-        <button onclick="toggleCartDrawer()" class="bg-gradient-to-b from-slate-100 to-slate-300 hover:from-white hover:to-slate-200 text-samy-deep border border-slate-400 font-industrial font-extrabold uppercase px-4 py-2.5 rounded flex items-center gap-2.5 transition shadow-lg cursor-pointer">
-          <svg class="w-5 h-5 text-samy-navy" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          <div class="text-left leading-tight">
-            <div class="text-[11px] font-bold text-samy-navy">MI COTIZACIÓN</div>
-            <div class="text-sm text-slate-900" id="cart-summary-desktop">0 items • $0.00</div>
-          </div>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="openCartModal()" class="bg-ingco-yellow hover:bg-ingco-orange text-ingco-black font-industrial font-black uppercase px-4 py-2.5 rounded-lg text-xs sm:text-sm transition shadow flex items-center gap-2 cursor-pointer">
+          <span>🛒 Cotización / Pedido</span>
+          <span id="cart-count-badge" class="bg-ingco-black text-ingco-yellow px-2 py-0.5 rounded-full text-xs font-mono">0</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- HERO SECTION -->
-  <section class="samy-hero-bg text-white relative overflow-hidden border-b border-slate-700">
-    <div class="h-2 w-full samy-metal-stripe"></div>
-    <div class="max-w-7xl mx-auto px-4 py-8 sm:py-11 relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-      <div class="max-w-2xl text-center lg:text-left">
-        <div class="inline-flex items-center gap-2 bg-slate-200/10 border border-slate-400/40 text-samy-silver px-3 py-1 rounded text-xs font-bold uppercase tracking-wider mb-3">
-          <span>⚙️ Acero, Herramientas y Construcción</span>
+  <!-- NOTIFICACIÓN TOAST -->
+  <div id="toast-notification" class="fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300 max-w-md">
+    <div id="toast-box" class="bg-ingco-black text-white border-l-4 border-ingco-yellow px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 text-xs font-semibold">
+      <span id="toast-icon" class="text-ingco-yellow text-base font-bold shrink-0">✓</span>
+      <span id="toast-message">Operación completada</span>
+    </div>
+  </div>
+
+  <!-- FILTROS Y BÚSQUEDA -->
+  <section class="bg-white border-b border-neutral-200 py-4 px-3 sm:px-4 shadow-2xs">
+    <div class="max-w-7xl mx-auto space-y-3">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div class="flex-1 max-w-xl">
+          <input
+            type="text"
+            id="catalog-search"
+            oninput="renderCatalog()"
+            placeholder="Buscar herramienta, SKU, categoría o especificación..."
+            class="w-full bg-neutral-50 border border-neutral-300 rounded-lg px-3.5 py-2 text-xs sm:text-sm font-medium focus:outline-none focus:border-ingco-yellow focus:bg-white"
+          />
         </div>
-        <h1 class="font-industrial font-black text-3xl sm:text-5xl uppercase tracking-tight leading-none mb-3">
-          HERRAMIENTAS Y MATERIALES <span class="text-samy-silver underline decoration-samy-chrome/60 decoration-4 underline-offset-4">DE ALTA RESISTENCIA</span>
-        </h1>
-        <p class="text-slate-200 text-sm sm:text-base mb-6 max-w-xl mx-auto lg:mx-0">
-          Consulta disponibilidad real, especificaciones detalladas y precios actualizados al instante desde nuestro catálogo <strong>Hierro Sammy</strong>. Arma tu cotización y envíala directo por WhatsApp.
-        </p>
-        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3">
-          <a href="#catalogo-section" class="bg-gradient-to-r from-slate-100 to-slate-300 hover:from-white hover:to-slate-200 text-samy-deep font-industrial font-extrabold uppercase px-6 py-3 rounded text-sm sm:text-base tracking-wide transition shadow-lg border border-white">
-            Explorar Catálogo
-          </a>
+        <div class="flex items-center justify-between sm:justify-end gap-3 text-xs text-neutral-500 font-semibold">
+          <span id="catalog-count">Cargando productos...</span>
+          <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+            <input type="checkbox" id="only-stock-toggle" onchange="renderCatalog()" checked class="rounded border-neutral-300 text-ingco-yellow focus:ring-ingco-yellow" />
+            <span>Solo con stock</span>
+          </label>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3 w-full max-w-sm">
-        <div class="bg-samy-steel/90 border-l-4 border-samy-silver p-4 rounded-r shadow-lg backdrop-blur-xs">
-          <div class="text-slate-300 text-xs font-semibold uppercase">Productos Activos</div>
-          <div id="stat-total-products" class="font-industrial font-black text-2xl sm:text-3xl text-white mt-0.5">0</div>
-          <div class="text-[11px] text-samy-silver mt-0.5">Cargados desde CSV</div>
-        </div>
-        <div class="bg-samy-steel/90 border-l-4 border-emerald-400 p-4 rounded-r shadow-lg backdrop-blur-xs">
-          <div class="text-slate-300 text-xs font-semibold uppercase">En Stock</div>
-          <div id="stat-in-stock" class="font-industrial font-black text-2xl sm:text-3xl text-emerald-400 mt-0.5">0</div>
-          <div class="text-[11px] text-slate-200 mt-0.5">Disponibles</div>
-        </div>
-      </div>
+      <div id="category-pills" class="flex flex-wrap items-center gap-1.5"></div>
     </div>
   </section>
 
-  <!-- MAIN CATALOG -->
-  <main id="catalogo-section" class="flex-1 max-w-7xl w-full mx-auto px-4 py-7">
-    <div class="mb-5">
-      <div class="flex items-center justify-between mb-2.5">
-        <h2 class="font-industrial font-extrabold text-lg sm:text-xl uppercase text-samy-deep flex items-center gap-2">
-          <span class="w-2.5 h-6 bg-samy-navy inline-block rounded-xs"></span>
-          Categorías Disponibles
-        </h2>
-        <span id="results-counter" class="text-xs sm:text-sm font-semibold text-slate-600">Cargando productos...</span>
-      </div>
-      <div id="category-tabs" class="flex items-center gap-2 overflow-x-auto pb-2"></div>
-    </div>
-
-    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
-
-    <div id="empty-state" class="hidden bg-white rounded-xl border-2 border-dashed border-slate-300 p-12 text-center my-6">
-      <h3 class="font-industrial font-extrabold text-xl uppercase text-samy-deep mb-1">No se encontraron productos</h3>
-      <p class="text-sm text-slate-500 mb-4">Verifica que el archivo <strong>Catalogof.csv</strong> esté en el mismo directorio y se abra mediante un servidor web (no con doble clic desde archivo local).</p>
-    </div>
+  <!-- GRID DE PRODUCTOS -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 py-6">
+    <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="bg-samy-deep text-slate-300 border-t-4 border-samy-chrome mt-12">
-    <div class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div class="logo-glow-wrapper px-3 py-2 rounded-lg border border-slate-400 shrink-0">
-          <img src="https://i.ibb.co/9kJ1CHYC/logo-transparete.png" alt="Hierro Samy" class="h-12 w-auto object-contain" />
-        </div>
-        <div>
-          <div class="font-industrial font-black text-2xl text-white uppercase tracking-tight mb-1">
-            HIERRO <span class="text-samy-silver">SAMMYY, C.A</span>
-          </div>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Catálogo digital interactivo <strong>HIERRO SAMMY</strong>. Tu ferretería y suplidora industrial de confianza.
-          </p>
-        </div>
+  <!-- MODAL: DETALLE DEL PRODUCTO -->
+  <div id="detail-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full overflow-hidden shadow-2xl border-2 border-ingco-yellow max-h-[92vh] flex flex-col">
+      <div class="bg-ingco-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-ingco-yellow shrink-0">
+        <span id="detail-sku" class="font-mono font-bold text-xs bg-ingco-black text-ingco-yellow px-2.5 py-1 rounded">SKU</span>
+        <button type="button" onclick="closeDetailModal()" class="text-neutral-400 hover:text-white font-bold text-xl cursor-pointer">✕</button>
       </div>
-      <div class="md:text-right">
-        <h4 class="font-industrial font-bold text-white uppercase tracking-wider text-sm mb-2.5">Atención y Pedidos WhatsApp</h4>
-        <div class="inline-flex items-center gap-2 bg-samy-steel px-3.5 py-2 rounded border border-slate-600 text-xs">
-          <span class="text-samy-silver font-bold">WhatsApp:</span>
-          <span class="text-white font-mono">+58 414-4077442 (Asistente Armando Diaz)</span>
-        </div>
-      </div>
-    </div>
-    <div class="bg-black/40 py-3 text-center text-[11px] text-slate-400 border-t border-slate-800">
-      Catálogo Digital Ferretero — © 2026 HIERRO SAMMY, C.A J-50055307-2 | Todos los derechos reservados.
-    </div>
-  </footer>
 
-  <!-- MODAL: FICHA TÉCNICA -->
-  <div id="product-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl max-w-2xl w-full overflow-hidden shadow-2xl border-2 border-samy-navy">
-      <div class="bg-samy-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-samy-chrome">
-        <div class="flex items-center gap-2">
-          <span id="modal-sku" class="bg-samy-silver text-samy-deep font-industrial font-black text-xs px-2.5 py-0.5 rounded uppercase">SKU</span>
-          <span id="modal-category" class="text-xs text-slate-300 font-semibold uppercase tracking-wider">CATEGORIA</span>
+      <div class="p-5 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+        <div class="bg-neutral-100 rounded-xl border border-neutral-200 flex items-center justify-center p-4 aspect-square overflow-hidden">
+          <img id="detail-img" src="" alt="" class="max-h-full max-w-full object-contain" />
         </div>
-        <button onclick="closeProductModal()" class="text-slate-300 hover:text-white text-xl font-bold px-2 cursor-pointer">✕</button>
-      </div>
-      <div class="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
-        <div class="sm:col-span-5 bg-slate-100 rounded-lg p-4 flex items-center justify-center border border-slate-200">
-          <img id="modal-img" src="" alt="Producto" class="max-h-48 object-contain rounded" onerror="this.src='https://via.placeholder.com/200?text=Sin+Imagen'" />
-        </div>
-        <div class="sm:col-span-7 space-y-3">
-          <h3 id="modal-title" class="font-industrial font-black text-2xl text-samy-deep uppercase leading-tight">Nombre Producto</h3>
-          <div id="modal-stock-badge" class="inline-block text-xs font-bold px-2.5 py-1 rounded">Stock</div>
-          <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
-            <div class="text-[11px] font-bold uppercase text-slate-500 mb-1">Descripción</div>
-            <p id="modal-desc" class="text-sm text-slate-800 font-medium leading-relaxed whitespace-pre-line"></p>
-          </div>
-          <div class="bg-samy-dark text-white rounded-lg p-3.5 flex items-center justify-between border border-slate-700">
-            <div>
-              <div class="text-[11px] text-slate-300 uppercase font-semibold">Precio USD ($)</div>
-              <div id="modal-price-usd" class="font-industrial font-black text-2xl text-samy-silver">$0.00</div>
-            </div>
-            <div class="text-right border-l border-slate-700 pl-4">
-              <div class="text-[11px] text-slate-300 uppercase font-semibold">Precio BCV (Bs.)</div>
-              <div id="modal-price-bs" class="font-industrial font-extrabold text-xl text-white">Bs. 0,00</div>
+
+        <div class="flex flex-col justify-between space-y-4">
+          <div class="space-y-2.5">
+            <span id="detail-category" class="inline-block bg-neutral-200 text-neutral-800 px-2 py-0.5 rounded font-bold text-[10px] uppercase"></span>
+            <h2 id="detail-name" class="font-industrial font-black text-2xl uppercase text-ingco-black leading-tight"></h2>
+            <div id="detail-stock-badge" class="inline-block px-2.5 py-0.5 rounded font-bold text-[11px]"></div>
+            <div class="pt-2 border-t border-neutral-100">
+              <div class="font-bold uppercase text-neutral-500 text-[10px] mb-1">Especificaciones Técnicas</div>
+              <p id="detail-desc" class="text-neutral-700 leading-relaxed whitespace-pre-line"></p>
             </div>
           </div>
-          <div class="flex gap-2.5 pt-1">
-            <button id="modal-add-btn" class="flex-1 bg-samy-navy hover:bg-samy-royal text-white font-industrial font-extrabold uppercase py-2.5 px-4 rounded text-sm transition flex items-center justify-center gap-2 shadow cursor-pointer">
-              Agregar a Cotización
+
+          <div class="bg-neutral-50 border border-neutral-200 rounded-xl p-3.5 space-y-2">
+            <div class="flex items-baseline justify-between">
+              <span class="text-neutral-500 font-semibold">Precio Referencial:</span>
+              <span id="detail-usd" class="font-industrial font-black text-2xl text-ingco-orange">$0,00</span>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <span class="text-neutral-500 font-semibold">Equivalente Bs.:</span>
+              <span id="detail-bcv" class="font-industrial font-extrabold text-lg text-ingco-black">Bs. 0,00</span>
+            </div>
+            <div id="detail-rate-note" class="text-[10px] text-neutral-400 text-right font-mono"></div>
+
+            <button type="button" id="detail-add-btn" class="w-full mt-2 bg-ingco-yellow hover:bg-ingco-orange text-ingco-black font-industrial font-black uppercase py-2.5 rounded-lg text-sm transition cursor-pointer">
+              + Agregar a la Cotización
             </button>
           </div>
         </div>
@@ -312,258 +162,384 @@
     </div>
   </div>
 
-  <!-- CART DRAWER (LISTA DE COTIZACIÓN) -->
-  <div id="cart-drawer-overlay" onclick="toggleCartDrawer()" class="fixed inset-0 z-50 hidden bg-slate-950/60 transition-opacity"></div>
-  <aside id="cart-drawer" class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-white shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col border-l-4 border-samy-navy">
-    <div class="bg-samy-dark text-white px-5 py-4 flex items-center justify-between border-b border-slate-700">
-      <div>
-        <h3 class="font-industrial font-black text-xl uppercase tracking-wide flex items-center gap-2">
-          <span class="text-samy-silver">🛒</span> Lista de Cotización
-        </h3>
-        <p class="text-xs text-slate-300">Envía tu pedido por WhatsApp</p>
+  <!-- MODAL: COTIZACIÓN / PEDIDO -->
+  <div id="cart-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-xl w-full overflow-hidden shadow-2xl border-2 border-ingco-yellow max-h-[92vh] flex flex-col">
+      <div class="bg-ingco-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-ingco-yellow shrink-0">
+        <h3 class="font-industrial font-extrabold text-lg uppercase">Resumen de Cotización / Pedido</h3>
+        <button type="button" onclick="closeCartModal()" class="text-neutral-400 hover:text-white font-bold text-xl cursor-pointer">✕</button>
       </div>
-      <button onclick="toggleCartDrawer()" class="bg-samy-steel hover:bg-samy-silver hover:text-samy-deep text-white w-8 h-8 rounded font-bold transition cursor-pointer">✕</button>
+
+      <div id="cart-items-container" class="p-5 overflow-y-auto flex-1 space-y-3 text-xs"></div>
+
+      <div class="p-4 bg-neutral-50 border-t border-neutral-200 space-y-3 shrink-0 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-neutral-600 uppercase">Total USD:</span>
+          <span id="cart-total-usd" class="font-industrial font-black text-xl text-ingco-orange">$0,00</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-neutral-600 uppercase">Total Bolívares:</span>
+          <span id="cart-total-bcv" class="font-industrial font-extrabold text-lg text-ingco-black">Bs. 0,00</span>
+        </div>
+
+        <div class="flex flex-wrap justify-between gap-2 pt-2 border-t border-neutral-200">
+          <button type="button" onclick="clearCart()" class="bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-bold px-3.5 py-2 rounded-lg cursor-pointer">
+            Vaciar
+          </button>
+          <div class="flex gap-2">
+            <button type="button" onclick="copyQuoteText()" class="bg-ingco-black hover:bg-neutral-800 text-white font-bold px-3.5 py-2 rounded-lg cursor-pointer">
+              Copiar Resumen
+            </button>
+            <button type="button" onclick="sendQuoteWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-industrial font-extrabold uppercase px-4 py-2 rounded-lg cursor-pointer">
+              Enviar por WhatsApp ↗
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div id="cart-items-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
-
-    <div class="bg-white border-t-2 border-slate-200 p-4 space-y-2.5 shadow-inner">
-      <!-- CAMPOS OBLIGATORIOS DEL CLIENTE -->
-      <div class="space-y-2">
-        <div>
-          <input 
-            type="text" 
-            id="customer-name" 
-            oninput="validateQuoteForm()"
-            placeholder="Tu Nombre / Empresa *" 
-            class="w-full border border-slate-300 rounded px-2.5 py-2 text-xs font-medium focus:outline-none focus:border-samy-navy transition" 
-          />
-        </div>
-        <div>
-          <input 
-            type="text" 
-            id="customer-id" 
-            oninput="validateQuoteForm()"
-            placeholder="Cédula / RIF (Ej: V-12345678 / J-12345678-9) *" 
-            class="w-full border border-slate-300 rounded px-2.5 py-2 text-xs font-medium focus:outline-none focus:border-samy-navy transition" 
-          />
-        </div>
-      </div>
-
-      <div class="bg-samy-dark text-white rounded-lg p-3 space-y-1 border border-slate-700">
-        <div class="flex justify-between items-center text-xs text-slate-300">
-          <span>Tasa BCV:</span>
-          <span id="cart-bcv-rate-label">0.00 Bs.</span>
-        </div>
-        <div class="flex justify-between items-center pt-1 border-t border-slate-700">
-          <span class="font-industrial font-bold uppercase text-sm">Total Divisas:</span>
-          <span id="cart-total-usd" class="font-industrial font-black text-2xl text-samy-silver">$0.00</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="font-industrial font-bold uppercase text-xs text-slate-300">Total Bolívares:</span>
-          <span id="cart-total-bs" class="font-industrial font-extrabold text-base text-white">Bs. 0,00</span>
-        </div>
-      </div>
-
-      <!-- MENSAJE DE ADVERTENCIA SI SE INTENTA ENVIAR SIN COMPLETAR CAMPOS -->
-      <div id="whatsapp-validation-alert" class="hidden bg-red-50 border border-red-300 text-red-700 px-3 py-2 rounded text-xs font-semibold flex items-center gap-2">
-        <span>⚠️</span>
-        <span id="whatsapp-validation-text">Por favor completa Tu Nombre / Empresa y Cédula / RIF para activar el envío.</span>
-      </div>
-
-      <!-- BOTÓN WHATSAPP CON ESTADO ACTIVO/DESACTIVADO -->
-      <button 
-        id="btn-send-whatsapp"
-        onclick="sendWhatsAppOrder()" 
-        aria-disabled="true"
-        class="w-full bg-slate-400 text-slate-100 opacity-75 cursor-not-allowed font-industrial font-extrabold uppercase py-3 px-4 rounded text-sm transition shadow-md flex items-center justify-center gap-2"
-      >
-        Enviar Pedido por WhatsApp (+584144077442)
-      </button>
-    </div>
-  </aside>
-
-  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-  <!-- JAVASCRIPT ROBUSTO PARA CSV Y ACTUALIZACIÓN AUTOMÁTICA BCV -->
   <script>
-    let products = [];
+    const WHATSAPP_NUMBER = "584120000000"; // Reemplazar con el número de contacto de Hierro Sammy
+    const GH_STORAGE_KEY = "ferrepro_github_cfg";
+    const CART_STORAGE_KEY = "ferrepro_cart_items";
+
+    let catalogProducts = [];
+    let currentRate = 914.02;
+    let selectedCategory = "TODAS";
     let cart = [];
-    let selectedCategory = "TODOS";
-    let currencyMode = "BOTH";
-    let config = {
-      bcvRate: 918.77,
-      whatsappPhone: "584144077442"
-    };
+    let toastTimeout = null;
 
-    async function initApp() {
-      const savedCart = localStorage.getItem("ferrepro_cart");
-      if (savedCart) { try { cart = JSON.parse(savedCart) || []; } catch (e) { cart = []; } }
+    const FALLBACK_PRODUCTS = [
+      {
+        codigoSku: "UCS18578",
+        nombreProducto: "Sierra Circular",
+        categoria: "Herramientas Eléctricas",
+        descripcion: "Voltaje: 110-120V~50/60Hz\nPotencia de entrada: 1200W\nDiámetro de la hoja: 7-1/4\"x0.787\"",
+        stock: 15,
+        precioDolar: 30,
+        precioBcv: Number((30 * 914.02).toFixed(2)),
+        foto: "https://i.ibb.co/hRGhLNJb/Sierra-Circular.jpg",
+        tasaCambio: 914.02
+      },
+      {
+        codigoSku: "UPS2408",
+        nombreProducto: "Lijadora Orbital De Mano",
+        categoria: "Herramientas Eléctricas",
+        descripcion: "Voltaje:110-120V~60Hz\nPotencia de entrada:240W\nVelocidad sin carga:14000rpm",
+        stock: 10,
+        precioDolar: 25,
+        precioBcv: Number((25 * 914.02).toFixed(2)),
+        foto: "https://i.ibb.co/PsY5q0q1/Lijadora-Orbital-De-Mano.jpg",
+        tasaCambio: 914.02
+      },
+      {
+        codigoSku: "UCOS223589",
+        nombreProducto: "Sierra cortada",
+        categoria: "Herramientas Eléctricas",
+        descripcion: "Voltage:110V-120V~50-60Hz\nInput power: 2200W\nBlade size:14\"x1\"",
+        stock: 20,
+        precioDolar: 15,
+        precioBcv: Number((15 * 914.02).toFixed(2)),
+        foto: "https://i.ibb.co/pBjTRfsd/Cierra-cortada.jpg",
+        tasaCambio: 914.02
+      }
+    ];
 
-      await loadCatalogCsv();
-      await fetchBcvRateAuto();
+    function showToast(message, isError = false) {
+      const toast = document.getElementById("toast-notification");
+      const box = document.getElementById("toast-box");
+      const icon = document.getElementById("toast-icon");
+      const msg = document.getElementById("toast-message");
 
-      updateHeaderUI();
-      renderCategoryTabs();
-      applyFilters();
-      renderCart();
-      validateQuoteForm();
-    }
-
-    async function fetchBcvRateAuto() {
-      const endpoints = [
-        async () => {
-          const res = await fetch(`https://ve.dolarapi.com/v1/dolares/oficial?nocache=${Date.now()}`, { cache: "no-store" });
-          if (!res.ok) throw new Error("Error en dolarapi");
-          const data = await res.json();
-          const val = parseFloat(data?.promedio ?? data?.venta ?? data?.compra ?? 0);
-          return val > 0 ? val : null;
-        },
-        async () => {
-          const res = await fetch(`https://pydolarve.org/api/v1/dollar?page=bcv&nocache=${Date.now()}`, { cache: "no-store" });
-          if (!res.ok) throw new Error("Error en pydolarve");
-          const data = await res.json();
-          const val = parseFloat(data?.monitors?.usd?.price ?? data?.price ?? 0);
-          return val > 0 ? val : null;
-        }
-      ];
-
-      for (const getRate of endpoints) {
-        try {
-          const rate = await getRate();
-          if (rate && !Number.isNaN(rate) && rate > 0) {
-            config.bcvRate = Number(rate.toFixed(4));
-            updateHeaderUI();
-            applyFilters();
-            renderCart();
-            return;
-          }
-        } catch (err) {
-          console.warn("Fuente BCV alternativa no disponible:", err);
-        }
+      msg.textContent = message;
+      if (isError) {
+        box.classList.remove("border-ingco-yellow");
+        box.classList.add("border-red-500");
+        icon.classList.remove("text-ingco-yellow");
+        icon.classList.add("text-red-400");
+        icon.textContent = "!";
+      } else {
+        box.classList.remove("border-red-500");
+        box.classList.add("border-ingco-yellow");
+        icon.classList.remove("text-red-400");
+        icon.classList.add("text-ingco-yellow");
+        icon.textContent = "✓";
       }
 
-      updateHeaderUI();
-      applyFilters();
-      renderCart();
+      toast.classList.remove("hidden");
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add("hidden");
+      }, 3500);
     }
 
-    async function loadCatalogCsv() {
-      try {
-        const response = await fetch(`Catalogof.csv?v=${Date.now()}`, { cache: "no-store" });
-        if (!response.ok) throw new Error("No se pudo cargar Catalogof.csv");
-        const csvText = await response.text();
-        parseCsvRobust(csvText);
-      } catch (error) {
-        console.error(error);
-        if (window.location.protocol !== "file:") {
-          showToast("Error al cargar Catalogof.csv. Verifica que esté en la raíz de GitHub.", "error");
-        }
+    function formatDecimal(num) {
+      return Number(num || 0).toLocaleString("es-VE", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">")
+        .replace(/"/g, """);
+    }
+
+    function parseFlexibleNumber(str) {
+      if (str === null || str === undefined) return NaN;
+      let cleaned = String(str).replace(/\$|Bs\.?/gi, "").trim();
+      if (!cleaned) return NaN;
+      if (cleaned.includes(".") && cleaned.includes(",")) {
+        cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+      } else if (cleaned.includes(",")) {
+        cleaned = cleaned.replace(",", ".");
       }
+      return parseFloat(cleaned);
     }
 
-    function parseCsvRobust(text) {
-      let rows = [];
+    function parseCsvRfc4180(text, delimiter) {
+      const rows = [];
       let currentRow = [];
       let currentField = "";
       let inQuotes = false;
+      const cleanText = text.replace(/^\uFEFF/, "");
 
-      for (let i = 0; i < text.length; i++) {
-        let char = text[i];
-        let nextChar = text[i + 1];
+      for (let i = 0; i < cleanText.length; i++) {
+        const char = cleanText[i];
+        const nextChar = cleanText[i + 1];
 
-        if (char === '"') {
-          if (inQuotes && nextChar === '"') {
-            currentField += '"';
-            i++;
+        if (inQuotes) {
+          if (char === '"') {
+            if (nextChar === '"') {
+              currentField += '"';
+              i++;
+            } else {
+              inQuotes = false;
+            }
           } else {
-            inQuotes = !inQuotes;
+            currentField += char;
           }
-        } else if (char === ';' && !inQuotes) {
-          currentRow.push(currentField.trim());
-          currentField = "";
-        } else if ((char === '\r' || char === '\n') && !inQuotes) {
-          if (char === '\r' && nextChar === '\n') { i++; }
-          currentRow.push(currentField.trim());
-          if (currentRow.length > 1 || currentRow[0] !== "") {
-            rows.push(currentRow);
-          }
-          currentRow = [];
-          currentField = "";
         } else {
-          currentField += char;
+          if (char === '"') {
+            inQuotes = true;
+          } else if (char === delimiter) {
+            currentRow.push(currentField);
+            currentField = "";
+          } else if (char === "\r" && nextChar === "\n") {
+            currentRow.push(currentField);
+            rows.push(currentRow);
+            currentRow = [];
+            currentField = "";
+            i++;
+          } else if (char === "\n" || char === "\r") {
+            currentRow.push(currentField);
+            rows.push(currentRow);
+            currentRow = [];
+            currentField = "";
+          } else {
+            currentField += char;
+          }
         }
       }
-      if (currentField !== "" || currentRow.length > 0) {
-        currentRow.push(currentField.trim());
+
+      if (currentField.length > 0 || currentRow.length > 0) {
+        currentRow.push(currentField);
         rows.push(currentRow);
       }
 
-      if (rows.length < 2) return;
+      return rows.filter(row => row.some(cell => cell.trim() !== ""));
+    }
 
-      const parsedProducts = [];
-      for (let i = 1; i < rows.length; i++) {
-        const cols = rows[i];
-        if (cols.length < 8 || !cols[0]) continue;
+    function parseCatalogCsv(csvText) {
+      const firstLine = csvText.split(/\r?\n/)[0] || "";
+      const delimiter = firstLine.includes(";") ? ";" : ",";
+      const parsedRows = parseCsvRfc4180(csvText, delimiter);
+      if (parsedRows.length < 2) return null;
 
-        const codigo = cols[0] || "";
-        const producto = cols[1] || "";
-        const categoria = (cols[2] || "GENERAL").toUpperCase();
-        const descripcion = cols[3] || "";
-        const stock = parseInt((cols[4] || "0").replace(/[^\d]/g, ""), 10) || 0;
-        
-        let precioDolar = parseFloat((cols[5] || "0").replace(/\$/g, "").replace(/\./g, "").replace(",", ".")) || 0;
-        let precioBcv = parseFloat((cols[6] || "0").replace(/Bs\.?/gi, "").replace(/\./g, "").replace(",", ".")) || 0;
-        const fotoUrl = cols[7] || "";
+      const normalizeHeader = (h) =>
+        String(h || "")
+          .trim()
+          .toUpperCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
 
-        if (precioDolar === 0 && precioBcv > 0) {
-          precioDolar = precioBcv / config.bcvRate;
+      const headers = parsedRows[0].map(normalizeHeader);
+      const findCol = (names, fallbackIdx) => {
+        const idx = headers.findIndex(h => names.includes(h));
+        return idx !== -1 ? idx : fallbackIdx;
+      };
+
+      const idxSku = findCol(["CODIGO SKU", "CODIGO", "SKU"], 0);
+      const idxNombre = findCol(["NOMBRE DEL PRODUCTO", "PRODUCTO", "NOMBRE"], 1);
+      const idxCat = findCol(["CATEGORIA"], 2);
+      const idxDesc = findCol(["DESCRIPCION", "ESPECIFICACIONES"], 3);
+      const idxStock = findCol(["STOCK", "CANTIDAD"], 4);
+      const idxUsd = findCol(["PRECIO DOLAR", "PRECIO DOLARES", "PRECIO USD"], 5);
+      const idxBcv = findCol(["PRECIO BCV", "PRECIO BS"], 6);
+      const idxFoto = findCol(["FOTO", "IMAGEN", "URL"], 7);
+      const idxTasa = findCol(["TASA DE CAMBIO", "TASA", "TASA BCV"], 8);
+
+      let detectedRate = null;
+      const items = [];
+
+      for (let i = 1; i < parsedRows.length; i++) {
+        const cols = parsedRows[i];
+        const sku = (cols[idxSku] || "").trim().toUpperCase();
+        const nombre = (cols[idxNombre] || "").trim();
+        if (!sku && !nombre) continue;
+
+        const rowRate = parseFlexibleNumber(cols[idxTasa]);
+        if (!isNaN(rowRate) && rowRate > 0) {
+          detectedRate = rowRate;
         }
 
-        parsedProducts.push({
-          codigo,
-          producto,
-          categoria,
-          descripcion,
-          stock,
-          precioUsd: Number(precioDolar.toFixed(2)),
-          foto: fotoUrl
+        const rateForRow = detectedRate || currentRate;
+        let usd = parseFlexibleNumber(cols[idxUsd]);
+        let bcv = parseFlexibleNumber(cols[idxBcv]);
+
+        if (isNaN(usd) && !isNaN(bcv) && rateForRow > 0) {
+          usd = Number((bcv / rateForRow).toFixed(2));
+        } else if (isNaN(usd)) {
+          usd = 0;
+        }
+
+        if (isNaN(bcv)) {
+          bcv = Number((usd * rateForRow).toFixed(2));
+        }
+
+        items.push({
+          codigoSku: sku,
+          nombreProducto: nombre,
+          categoria: (cols[idxCat] || "General").trim(),
+          descripcion: (cols[idxDesc] || "").replace(/\r\n/g, "\n").trim(),
+          stock: parseInt(cols[idxStock], 10) || 0,
+          precioDolar: usd,
+          precioBcv: bcv,
+          foto: (cols[idxFoto] || "").trim(),
+          tasaCambio: rateForRow
         });
       }
 
-      products = parsedProducts;
-      updateHeaderUI();
-      renderCategoryTabs();
-      applyFilters();
+      return { items, detectedRate };
     }
 
-    function updateHeaderUI() {
-      document.getElementById("display-bcv-rate").textContent = config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bs.";
-      document.getElementById("stat-total-products").textContent = products.length;
-      document.getElementById("stat-in-stock").textContent = products.filter(p => p.stock > 0).length;
-      document.getElementById("cart-bcv-rate-label").textContent = config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bs./$";
+    function getCsvUrl() {
+      const savedGh = localStorage.getItem(GH_STORAGE_KEY);
+      if (savedGh) {
+        try {
+          const cfg = JSON.parse(savedGh);
+          if (cfg.owner && cfg.repo && cfg.path) {
+            const branch = cfg.branch || "main";
+            const cleanPath = String(cfg.path).replace(/^\/+/, "");
+            return {
+              url: `https://raw.githubusercontent.com/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/${encodeURIComponent(branch)}/${cleanPath}`,
+              label: `${cfg.owner}/${cfg.repo}/${cleanPath}`
+            };
+          }
+        } catch (e) {}
+      }
+      return { url: "Catalogof.csv", label: "Catalogof.csv" };
     }
 
-    function setCurrencyMode(mode) {
-      currencyMode = mode;
-      document.querySelectorAll(".curr-btn").forEach(btn => {
-        btn.classList.remove("bg-samy-silver", "text-samy-deep");
-        btn.classList.add("text-slate-300");
+    function applyProductsState(items, rate) {
+      currentRate = Number(rate) > 0 ? Number(rate) : currentRate;
+      catalogProducts = items.map(p => {
+        const usd = Number(p.precioDolar || 0);
+        return {
+          ...p,
+          precioDolar: usd,
+          precioBcv: Number((usd * currentRate).toFixed(2)),
+          tasaCambio: currentRate
+        };
       });
-      document.getElementById("btn-curr-" + mode).classList.remove("text-slate-300");
-      document.getElementById("btn-curr-" + mode).classList.add("bg-samy-silver", "text-samy-deep");
-      applyFilters();
+
+      document.getElementById("top-bcv-rate").textContent = `${formatDecimal(currentRate)} Bs.`;
+      renderCategoryPills();
+      renderCatalog();
+      updateCartBadge();
     }
 
-    function renderCategoryTabs() {
-      const container = document.getElementById("category-tabs");
-      const categories = ["TODOS", ...new Set(products.map(p => p.categoria))];
+    async function loadCatalog(showFeedback = false) {
+      const savedConfig = localStorage.getItem("ferrepro_config");
+      if (savedConfig) {
+        try {
+          const parsed = JSON.parse(savedConfig);
+          if (parsed && Number(parsed.bcvRate) > 0) {
+            currentRate = Number(parsed.bcvRate);
+          }
+        } catch (e) {}
+      }
+
+      const { url, label } = getCsvUrl();
+      document.getElementById("catalog-source-badge").textContent = label;
+
+      try {
+        const separator = url.includes("?") ? "&" : "?";
+        const res = await fetch(`${url}${separator}_=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const csvText = await res.text();
+        const parsedCsv = parseCatalogCsv(csvText);
+
+        if (parsedCsv && parsedCsv.items.length > 0) {
+          const effectiveRate = parsedCsv.detectedRate || currentRate;
+          applyProductsState(parsedCsv.items, effectiveRate);
+          if (showFeedback) showToast(`Catálogo actualizado (${parsedCsv.items.length} productos).`);
+          return;
+        }
+        throw new Error("CSV sin filas válidas");
+      } catch (err) {
+        const savedProducts = localStorage.getItem("ferrepro_products");
+        if (savedProducts) {
+          try {
+            const list = JSON.parse(savedProducts);
+            if (Array.isArray(list) && list.length > 0) {
+              const normalized = list.map(item => ({
+                codigoSku: item.codigoSku || item.codigo || "",
+                nombreProducto: item.nombreProducto || item.producto || "",
+                categoria: item.categoria || "General",
+                descripcion: item.descripcion !== undefined ? item.descripcion : (item.especificaciones || ""),
+                stock: Number(item.stock) || 0,
+                precioDolar: Number(item.precioDolar !== undefined ? item.precioDolar : item.precioUsd) || 0,
+                precioBcv: 0,
+                foto: item.foto || "",
+                tasaCambio: currentRate
+              }));
+              applyProductsState(normalized, currentRate);
+              if (showFeedback) showToast("Mostrando datos locales en caché.", true);
+              return;
+            }
+          } catch (e) {}
+        }
+
+        applyProductsState(FALLBACK_PRODUCTS, 914.02);
+        if (showFeedback) showToast("Mostrando catálogo de respaldo inicial.", true);
+      }
+    }
+
+    function renderCategoryPills() {
+      const categories = ["TODAS", ...new Set(catalogProducts.map(p => p.categoria || "General"))];
+      if (!categories.includes(selectedCategory)) {
+        selectedCategory = "TODAS";
+      }
+
+      const container = document.getElementById("category-pills");
       container.innerHTML = categories.map(cat => {
-        const isActive = selectedCategory === cat;
-        const count = cat === "TODOS" ? products.length : products.filter(p => p.categoria === cat).length;
+        const active = cat === selectedCategory;
         return `
-          <button onclick="selectCategory('${cat}')" class="whitespace-nowrap px-4 py-2 rounded font-industrial font-extrabold text-xs sm:text-sm uppercase transition border cursor-pointer ${isActive ? 'bg-samy-navy text-white border-samy-navy shadow-md' : 'bg-white text-slate-700 border-slate-300 hover:border-samy-navy'}">
-            <span>${cat}</span> <span class="text-[11px] px-1.5 py-0.2 rounded ${isActive ? 'bg-samy-silver text-samy-deep' : 'bg-slate-200 text-slate-700'}">${count}</span>
+          <button
+            type="button"
+            onclick="selectCategory('${escapeHtml(cat).replace(/'/g, "\\'")}')"
+            class="px-3 py-1.5 rounded-full text-xs font-bold transition cursor-pointer ${
+              active
+                ? "bg-ingco-black text-ingco-yellow shadow-2xs"
+                : "bg-neutral-100 hover:bg-neutral-200 text-neutral-700"
+            }"
+          >
+            ${escapeHtml(cat)}
           </button>
         `;
       }).join("");
@@ -571,89 +547,108 @@
 
     function selectCategory(cat) {
       selectedCategory = cat;
-      renderCategoryTabs();
-      applyFilters();
+      renderCategoryPills();
+      renderCatalog();
     }
 
-    function clearSearch() {
-      document.getElementById("search-input").value = "";
-      applyFilters();
-    }
+    function getFilteredProducts() {
+      const q = (document.getElementById("catalog-search").value || "").trim().toLowerCase();
+      const onlyStock = document.getElementById("only-stock-toggle").checked;
 
-    function resetFilters() {
-      selectedCategory = "TODOS";
-      document.getElementById("search-input").value = "";
-      renderCategoryTabs();
-      applyFilters();
-    }
-
-    function applyFilters() {
-      const query = document.getElementById("search-input").value.trim().toLowerCase();
-      document.getElementById("clear-search-btn").classList.toggle("hidden", query.length === 0);
-
-      const filtered = products.filter(item => {
-        const matchesCat = selectedCategory === "TODOS" || item.categoria === selectedCategory;
-        const matchesQuery = !query ||
-          item.codigo.toLowerCase().includes(query) ||
-          item.producto.toLowerCase().includes(query) ||
-          item.categoria.toLowerCase().includes(query) ||
-          item.descripcion.toLowerCase().includes(query);
-        return matchesCat && matchesQuery;
+      return catalogProducts.filter(p => {
+        if (onlyStock && Number(p.stock) <= 0) return false;
+        if (selectedCategory !== "TODAS" && (p.categoria || "General") !== selectedCategory) return false;
+        if (!q) return true;
+        return (
+          (p.codigoSku || "").toLowerCase().includes(q) ||
+          (p.nombreProducto || "").toLowerCase().includes(q) ||
+          (p.categoria || "").toLowerCase().includes(q) ||
+          (p.descripcion || "").toLowerCase().includes(q)
+        );
       });
-
-      renderProductGrid(filtered);
     }
 
-    function renderProductGrid(list) {
-      const grid = document.getElementById("product-grid");
-      const emptyState = document.getElementById("empty-state");
-      document.getElementById("results-counter").textContent = `Mostrando ${list.length} productos`;
+    function renderCatalog() {
+      const filtered = getFilteredProducts();
+      document.getElementById("catalog-count").textContent =
+        `Mostrando ${filtered.length} de ${catalogProducts.length} productos`;
 
-      if (list.length === 0) {
-        grid.innerHTML = "";
-        emptyState.classList.remove("hidden");
+      const grid = document.getElementById("catalog-grid");
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full bg-white rounded-xl border border-neutral-200 p-10 text-center text-neutral-400 text-sm font-medium">
+            No hay productos que coincidan con los filtros actuales.
+          </div>
+        `;
         return;
       }
-      emptyState.classList.add("hidden");
 
-      grid.innerHTML = list.map(item => {
-        const stockBadge = item.stock <= 0 
-          ? `<span class="bg-red-100 text-red-700 text-[11px] font-bold px-2 py-0.5 rounded">Agotado</span>`
-          : `<span class="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded">Stock: ${item.stock}</span>`;
-
-        let priceHtml = "";
-        const bsVal = item.precioUsd * config.bcvRate;
-        if (currencyMode === "USD") {
-          priceHtml = `<div class="font-industrial font-black text-2xl text-samy-deep">$${item.precioUsd.toFixed(2)}</div>`;
-        } else if (currencyMode === "BS") {
-          priceHtml = `<div class="font-industrial font-black text-xl text-samy-deep">Bs. ${bsVal.toLocaleString("es-VE", {minimumFractionDigits: 2})}</div>`;
-        } else {
-          priceHtml = `
-            <div class="flex items-baseline justify-between gap-2">
-              <div class="font-industrial font-black text-2xl text-samy-deep">$${item.precioUsd.toFixed(2)}</div>
-              <div class="font-industrial font-extrabold text-sm text-slate-600">Bs. ${bsVal.toLocaleString("es-VE", {minimumFractionDigits: 2})}</div>
-            </div>`;
-        }
-
-        const imgSrc = item.foto && item.foto.startsWith("http") ? item.foto : "https://via.placeholder.com/250?text=Ferreteria";
+      grid.innerHTML = filtered.map(p => {
+        const realIndex = catalogProducts.indexOf(p);
+        const inStock = Number(p.stock) > 0;
+        const imgUrl = p.foto && p.foto.trim() !== ""
+          ? escapeHtml(p.foto.trim())
+          : "https://placehold.co/300x220/262626/F5A623?text=HIERRO+SAMMY";
 
         return `
-          <article class="bg-white rounded-xl border border-slate-200 hover:border-samy-navy shadow-sm hover:shadow-xl transition flex flex-col overflow-hidden group">
-            <div class="px-3.5 pt-3 pb-2 flex items-center justify-between border-b border-slate-100 bg-slate-50/60">
-              <span class="bg-samy-navy text-white font-industrial font-black text-xs px-2.5 py-0.5 rounded">${item.codigo}</span>
-              ${stockBadge}
+          <article class="bg-white rounded-xl border border-neutral-200 shadow-2xs hover:shadow-md transition flex flex-col overflow-hidden">
+            <div onclick="openDetailModal(${realIndex})" class="relative bg-neutral-100 h-44 flex items-center justify-center p-3 cursor-pointer overflow-hidden border-b border-neutral-100">
+              <span class="absolute top-2.5 left-2.5 bg-ingco-black text-ingco-yellow font-mono font-bold text-[10px] px-2 py-0.5 rounded">
+                ${escapeHtml(p.codigoSku)}
+              </span>
+              <span class="absolute top-2.5 right-2.5 font-bold text-[10px] px-2 py-0.5 rounded ${
+                inStock ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
+              }">
+                ${inStock ? `${Number(p.stock)} disp.` : "Agotado"}
+              </span>
+              <img
+                src="${imgUrl}"
+                alt="${escapeHtml(p.nombreProducto)}"
+                class="max-h-full max-w-full object-contain hover:scale-105 transition duration-200"
+                onerror="this.onerror=null;this.src='https://placehold.co/300x220/262626/F5A623?text=SIN+FOTO';"
+              />
             </div>
-            <div onclick="openProductModal('${item.codigo}')" class="relative bg-slate-50 h-48 flex items-center justify-center p-3 cursor-pointer overflow-hidden">
-              <img src="${imgSrc}" alt="${item.producto}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition duration-300" onerror="this.src='https://via.placeholder.com/250?text=Sin+Imagen'" />
-            </div>
-            <div class="p-4 flex-1 flex flex-col">
-              <div class="text-[11px] font-bold uppercase text-samy-royal mb-0.5">${item.categoria}</div>
-              <h3 onclick="openProductModal('${item.codigo}')" class="font-industrial font-extrabold text-lg text-samy-deep uppercase leading-snug mb-1.5 cursor-pointer line-clamp-2">${item.producto}</h3>
-              <p class="text-xs text-slate-600 line-clamp-2 mb-4 flex-1 whitespace-pre-line">${item.descripcion}</p>
-              <div class="bg-slate-100 rounded-lg p-2.5 mb-3 border border-slate-200">${priceHtml}</div>
-              <div class="grid grid-cols-12 gap-2">
-                <button onclick="openProductModal('${item.codigo}')" class="col-span-5 bg-slate-700 hover:bg-samy-deep text-white font-industrial font-bold uppercase py-2 px-2 rounded text-xs transition cursor-pointer">Ficha</button>
-                <button onclick="addToCart('${item.codigo}')" ${item.stock <= 0 ? 'disabled' : ''} class="col-span-7 font-industrial font-extrabold uppercase py-2 px-2.5 rounded text-xs transition flex items-center justify-center gap-1 shadow-xs ${item.stock <= 0 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-samy-navy hover:bg-samy-royal text-white cursor-pointer'}">+ Cotizar</button>
+
+            <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+              <div class="space-y-1.5">
+                <div class="text-[10px] font-bold uppercase text-neutral-500 tracking-wide">
+                  ${escapeHtml(p.categoria || "General")}
+                </div>
+                <h3 onclick="openDetailModal(${realIndex})" class="font-industrial font-black text-lg uppercase text-ingco-black leading-snug cursor-pointer hover:text-ingco-orange transition">
+                  ${escapeHtml(p.nombreProducto)}
+                </h3>
+                <p class="text-[11px] text-neutral-600 line-clamp-3 whitespace-pre-line leading-relaxed">
+                  ${escapeHtml(p.descripcion || "Sin especificaciones registradas.")}
+                </p>
+              </div>
+
+              <div class="pt-3 border-t border-neutral-100 space-y-2.5">
+                <div class="flex items-baseline justify-between">
+                  <span class="font-industrial font-black text-2xl text-ingco-orange">$${formatDecimal(p.precioDolar)}</span>
+                  <span class="font-industrial font-bold text-sm text-neutral-700">Bs. ${formatDecimal(p.precioBcv)}</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-1.5">
+                  <button
+                    type="button"
+                    onclick="openDetailModal(${realIndex})"
+                    class="bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold py-2 rounded-lg text-xs transition cursor-pointer"
+                  >
+                    Detalles
+                  </button>
+                  <button
+                    type="button"
+                    onclick="addToCart(${realIndex})"
+                    ${!inStock ? "disabled" : ""}
+                    class="font-industrial font-extrabold uppercase py-2 rounded-lg text-xs transition ${
+                      inStock
+                        ? "bg-ingco-yellow hover:bg-ingco-orange text-ingco-black cursor-pointer"
+                        : "bg-neutral-200 text-neutral-400 cursor-not-allowed"
+                    }"
+                  >
+                    ${inStock ? "+ Cotizar" : "Sin Stock"}
+                  </button>
+                </div>
               </div>
             </div>
           </article>
@@ -661,224 +656,236 @@
       }).join("");
     }
 
-    function openProductModal(codigo) {
-      const item = products.find(p => p.codigo === codigo);
-      if (!item) return;
+    function openDetailModal(index) {
+      const p = catalogProducts[index];
+      if (!p) return;
 
-      document.getElementById("modal-sku").textContent = item.codigo;
-      document.getElementById("modal-category").textContent = item.categoria;
-      document.getElementById("modal-title").textContent = item.producto;
-      document.getElementById("modal-desc").textContent = item.descripcion || "Sin descripción detallada.";
-      document.getElementById("modal-price-usd").textContent = "$" + item.precioUsd.toFixed(2);
-      document.getElementById("modal-price-bs").textContent = "Bs. " + (item.precioUsd * config.bcvRate).toLocaleString("es-VE", {minimumFractionDigits: 2});
-      document.getElementById("modal-img").src = item.foto && item.foto.startsWith("http") ? item.foto : "https://via.placeholder.com/300?text=Sin+Imagen";
+      const inStock = Number(p.stock) > 0;
+      const imgUrl = p.foto && p.foto.trim() !== ""
+        ? p.foto.trim()
+        : "https://placehold.co/300x220/262626/F5A623?text=HIERRO+SAMMY";
 
-      const stockBadge = document.getElementById("modal-stock-badge");
-      stockBadge.className = item.stock <= 0 ? "inline-block text-xs font-bold px-2.5 py-1 rounded bg-red-100 text-red-700" : "inline-block text-xs font-bold px-2.5 py-1 rounded bg-emerald-100 text-emerald-800";
-      stockBadge.textContent = item.stock <= 0 ? "Agotado" : `Disponible: ${item.stock} unidades`;
+      document.getElementById("detail-sku").textContent = `SKU: ${p.codigoSku}`;
+      document.getElementById("detail-category").textContent = p.categoria || "General";
+      document.getElementById("detail-name").textContent = p.nombreProducto;
+      document.getElementById("detail-desc").textContent = p.descripcion || "Sin especificaciones registradas.";
+      document.getElementById("detail-usd").textContent = `$${formatDecimal(p.precioDolar)}`;
+      document.getElementById("detail-bcv").textContent = `Bs. ${formatDecimal(p.precioBcv)}`;
+      document.getElementById("detail-rate-note").textContent = `Tasa aplicada: ${formatDecimal(currentRate)} Bs./USD`;
 
-      const addBtn = document.getElementById("modal-add-btn");
-      addBtn.disabled = item.stock <= 0;
-      addBtn.onclick = () => { addToCart(item.codigo); closeProductModal(); };
+      const img = document.getElementById("detail-img");
+      img.src = imgUrl;
+      img.alt = p.nombreProducto;
+      img.onerror = () => {
+        img.onerror = null;
+        img.src = "https://placehold.co/300x220/262626/F5A623?text=SIN+FOTO";
+      };
 
-      document.getElementById("product-modal").classList.remove("hidden");
+      const stockBadge = document.getElementById("detail-stock-badge");
+      stockBadge.textContent = inStock ? `Disponible: ${Number(p.stock)} unidades` : "Agotado";
+      stockBadge.className = `inline-block px-2.5 py-0.5 rounded font-bold text-[11px] ${
+        inStock ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
+      }`;
+
+      const addBtn = document.getElementById("detail-add-btn");
+      addBtn.disabled = !inStock;
+      addBtn.textContent = inStock ? "+ Agregar a la Cotización" : "Producto Agotado";
+      addBtn.className = `w-full mt-2 font-industrial font-black uppercase py-2.5 rounded-lg text-sm transition ${
+        inStock
+          ? "bg-ingco-yellow hover:bg-ingco-orange text-ingco-black cursor-pointer"
+          : "bg-neutral-200 text-neutral-400 cursor-not-allowed"
+      }`;
+      addBtn.onclick = () => {
+        addToCart(index);
+        closeDetailModal();
+      };
+
+      document.getElementById("detail-modal").classList.remove("hidden");
     }
 
-    function closeProductModal() { document.getElementById("product-modal").classList.add("hidden"); }
+    function closeDetailModal() {
+      document.getElementById("detail-modal").classList.add("hidden");
+    }
 
-    function toggleCartDrawer() {
-      const drawer = document.getElementById("cart-drawer");
-      const overlay = document.getElementById("cart-drawer-overlay");
-      const isClosed = drawer.classList.contains("translate-x-full");
-      if (isClosed) {
-        drawer.classList.remove("translate-x-full");
-        overlay.classList.remove("hidden");
-        validateQuoteForm();
-      } else {
-        drawer.classList.add("translate-x-full");
-        overlay.classList.add("hidden");
+    function loadCart() {
+      const saved = localStorage.getItem(CART_STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) cart = parsed;
+        } catch (e) {}
       }
+      updateCartBadge();
     }
 
-    function addToCart(codigo) {
-      const prod = products.find(p => p.codigo === codigo);
-      if (!prod || prod.stock <= 0) return;
+    function saveCart() {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      updateCartBadge();
+    }
 
-      const existing = cart.find(c => c.codigo === codigo);
+    function updateCartBadge() {
+      const totalQty = cart.reduce((acc, item) => acc + (Number(item.qty) || 0), 0);
+      document.getElementById("cart-count-badge").textContent = totalQty;
+    }
+
+    function addToCart(index) {
+      const p = catalogProducts[index];
+      if (!p || Number(p.stock) <= 0) return;
+
+      const existing = cart.find(item => item.sku === p.codigoSku);
       if (existing) {
-        if (existing.qty < prod.stock) {
+        if (existing.qty < Number(p.stock)) {
           existing.qty += 1;
         } else {
-          showToast("Stock máximo alcanzado", "error");
+          showToast(`Stock máximo alcanzado (${p.stock} u.) para ${p.codigoSku}.`, true);
           return;
         }
       } else {
-        cart.push({ codigo: prod.codigo, qty: 1 });
+        cart.push({
+          sku: p.codigoSku,
+          name: p.nombreProducto,
+          usd: Number(p.precioDolar || 0),
+          maxStock: Number(p.stock || 1),
+          qty: 1
+        });
       }
-      localStorage.setItem("ferrepro_cart", JSON.stringify(cart));
-      renderCart();
-      showToast(`Agregado: ${prod.producto}`);
+
+      saveCart();
+      showToast(`Agregado: ${p.nombreProducto}`);
     }
 
-    function updateCartQty(codigo, delta) {
-      const idx = cart.findIndex(c => c.codigo === codigo);
+    function changeCartQty(sku, delta) {
+      const idx = cart.findIndex(item => item.sku === sku);
       if (idx === -1) return;
-      const prod = products.find(p => p.codigo === codigo);
+
       const nextQty = cart[idx].qty + delta;
       if (nextQty <= 0) {
         cart.splice(idx, 1);
-      } else if (nextQty <= prod.stock) {
+      } else if (nextQty > cart[idx].maxStock) {
+        showToast(`Solo hay ${cart[idx].maxStock} unidades disponibles.`, true);
+        return;
+      } else {
         cart[idx].qty = nextQty;
       }
-      localStorage.setItem("ferrepro_cart", JSON.stringify(cart));
-      renderCart();
+
+      saveCart();
+      renderCartModal();
     }
 
-    function renderCart() {
+    function clearCart() {
+      cart = [];
+      saveCart();
+      renderCartModal();
+    }
+
+    function openCartModal() {
+      renderCartModal();
+      document.getElementById("cart-modal").classList.remove("hidden");
+    }
+
+    function closeCartModal() {
+      document.getElementById("cart-modal").classList.add("hidden");
+    }
+
+    function renderCartModal() {
       const container = document.getElementById("cart-items-container");
-      let totalItems = 0;
       let totalUsd = 0;
 
       if (cart.length === 0) {
-        container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400"><p class="font-industrial font-bold text-base uppercase text-slate-600">Tu lista está vacía</p></div>`;
-      } else {
-        container.innerHTML = cart.map(entry => {
-          const prod = products.find(p => p.codigo === entry.codigo);
-          if (!prod) return "";
-          const lineUsd = prod.precioUsd * entry.qty;
-          totalItems += entry.qty;
-          totalUsd += lineUsd;
-          const bsLine = lineUsd * config.bcvRate;
-          return `
-            <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between gap-3">
-              <div class="flex-1 min-w-0">
-                <span class="bg-samy-navy text-white font-bold text-[10px] px-1.5 py-0.2 rounded">${prod.codigo}</span>
-                <div class="font-industrial font-extrabold text-sm text-samy-deep uppercase truncate mt-1">${prod.producto}</div>
-                <div class="text-xs font-bold text-slate-700">$${lineUsd.toFixed(2)} | Bs. ${bsLine.toLocaleString("es-VE", {minimumFractionDigits: 2})}</div>
-              </div>
-              <div class="flex items-center bg-slate-100 rounded border border-slate-300">
-                <button onclick="updateCartQty('${prod.codigo}', -1)" class="w-7 h-7 font-bold text-slate-700 hover:bg-slate-200 cursor-pointer">−</button>
-                <span class="w-8 text-center text-xs font-extrabold">${entry.qty}</span>
-                <button onclick="updateCartQty('${prod.codigo}', 1)" class="w-7 h-7 font-bold text-slate-700 hover:bg-slate-200 cursor-pointer">+</button>
-              </div>
+        container.innerHTML = `<div class="py-10 text-center text-neutral-400 font-medium">Tu cotización está vacía. Agrega productos desde el catálogo.</div>`;
+        document.getElementById("cart-total-usd").textContent = "$0,00";
+        document.getElementById("cart-total-bcv").textContent = "Bs. 0,00";
+        return;
+      }
+
+      container.innerHTML = cart.map(item => {
+        const currentProd = catalogProducts.find(p => p.codigoSku === item.sku);
+        const unitUsd = currentProd ? Number(currentProd.precioDolar || 0) : Number(item.usd || 0);
+        const subtotalUsd = unitUsd * item.qty;
+        totalUsd += subtotalUsd;
+
+        return `
+          <div class="flex items-center justify-between gap-3 bg-neutral-50 border border-neutral-200 rounded-lg p-3">
+            <div class="min-w-0 flex-1">
+              <div class="font-mono text-[10px] font-bold text-neutral-500">${escapeHtml(item.sku)}</div>
+              <div class="font-industrial font-extrabold text-sm uppercase text-ingco-black truncate">${escapeHtml(item.name)}</div>
+              <div class="text-[11px] text-neutral-600">$${formatDecimal(unitUsd)} c/u · Bs. ${formatDecimal(unitUsd * currentRate)} c/u</div>
             </div>
-          `;
-        }).join("");
-      }
 
-      document.getElementById("cart-badge-mobile").textContent = totalItems;
-      document.getElementById("cart-summary-desktop").textContent = `${totalItems} items • $${totalUsd.toFixed(2)}`;
-      document.getElementById("cart-total-usd").textContent = "$" + totalUsd.toFixed(2);
-      document.getElementById("cart-total-bs").textContent = "Bs. " + (totalUsd * config.bcvRate).toLocaleString("es-VE", {minimumFractionDigits: 2});
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="changeCartQty('${escapeHtml(item.sku).replace(/'/g, "\\'")}', -1)" class="w-7 h-7 rounded bg-neutral-200 hover:bg-neutral-300 font-bold cursor-pointer">-</button>
+              <span class="w-6 text-center font-mono font-bold">${item.qty}</span>
+              <button type="button" onclick="changeCartQty('${escapeHtml(item.sku).replace(/'/g, "\\'")}', 1)" class="w-7 h-7 rounded bg-neutral-200 hover:bg-neutral-300 font-bold cursor-pointer">+</button>
+            </div>
+
+            <div class="text-right shrink-0 w-24">
+              <div class="font-industrial font-black text-sm text-ingco-orange">$${formatDecimal(subtotalUsd)}</div>
+              <div class="text-[10px] font-bold text-neutral-700">Bs. ${formatDecimal(subtotalUsd * currentRate)}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      document.getElementById("cart-total-usd").textContent = `$${formatDecimal(totalUsd)}`;
+      document.getElementById("cart-total-bcv").textContent = `Bs. ${formatDecimal(totalUsd * currentRate)}`;
     }
 
-    /* VALIDACIÓN EN TIEMPO REAL DE TU NOMBRE / EMPRESA Y CÉDULA / RIF */
-    function validateQuoteForm() {
-      const nameInput = document.getElementById("customer-name");
-      const idInput = document.getElementById("customer-id");
-      const btn = document.getElementById("btn-send-whatsapp");
-      const alertBox = document.getElementById("whatsapp-validation-alert");
-
-      const isNameValid = nameInput.value.trim().length > 0;
-      const isIdValid = idInput.value.trim().length > 0;
-      const isReady = isNameValid && isIdValid;
-
-      if (isNameValid) {
-        nameInput.classList.remove("border-red-500", "bg-red-50");
-        nameInput.classList.add("border-slate-300");
-      }
-      if (isIdValid) {
-        idInput.classList.remove("border-red-500", "bg-red-50");
-        idInput.classList.add("border-slate-300");
-      }
-
-      if (isReady) {
-        btn.setAttribute("aria-disabled", "false");
-        btn.classList.remove("bg-slate-400", "text-slate-100", "opacity-75", "cursor-not-allowed");
-        btn.classList.add("bg-emerald-600", "hover:bg-emerald-500", "text-white", "cursor-pointer", "shadow-lg");
-        alertBox.classList.add("hidden");
-      } else {
-        btn.setAttribute("aria-disabled", "true");
-        btn.classList.remove("bg-emerald-600", "hover:bg-emerald-500", "text-white", "cursor-pointer", "shadow-lg");
-        btn.classList.add("bg-slate-400", "text-slate-100", "opacity-75", "cursor-not-allowed");
-      }
-
-      return isReady;
-    }
-
-    function sendWhatsAppOrder() {
-      const nameInput = document.getElementById("customer-name");
-      const idInput = document.getElementById("customer-id");
-      const alertBox = document.getElementById("whatsapp-validation-alert");
-      const alertText = document.getElementById("whatsapp-validation-text");
-
-      const customerName = nameInput.value.trim();
-      const customerId = idInput.value.trim();
-
-      /* SI ESTÁ DESACTIVADO (CAMPOS VACÍOS), MOSTRAR MENSAJE Y RESALTAR CAMPOS */
-      if (!customerName || !customerId) {
-        let missingFields = [];
-        if (!customerName) {
-          missingFields.push("Tu Nombre / Empresa");
-          nameInput.classList.remove("border-slate-300");
-          nameInput.classList.add("border-red-500", "bg-red-50");
-        }
-        if (!customerId) {
-          missingFields.push("Cédula / RIF");
-          idInput.classList.remove("border-slate-300");
-          idInput.classList.add("border-red-500", "bg-red-50");
-        }
-
-        const msgError = `Debes llenar los campos obligatorios: ${missingFields.join(" y ")}.`;
-        alertText.textContent = msgError;
-        alertBox.classList.remove("hidden");
-        showToast(msgError, "error");
-
-        if (!customerName) {
-          nameInput.focus();
-        } else {
-          idInput.focus();
-        }
-        return;
-      }
-
-      if (cart.length === 0) {
-        showToast("Agrega productos a tu cotización primero.", "error");
-        return;
-      }
-
+    function buildQuoteMessage() {
       let totalUsd = 0;
-      const lines = cart.map((entry, index) => {
-        const prod = products.find(p => p.codigo === entry.codigo);
-        if (!prod) return "";
-        const subUsd = prod.precioUsd * entry.qty;
+      const lines = [
+        "*SOLICITUD DE COTIZACIÓN - HIERRO SAMMY*",
+        `Tasa ref.: ${formatDecimal(currentRate)} Bs./USD`,
+        "--------------------------------"
+      ];
+
+      cart.forEach(item => {
+        const currentProd = catalogProducts.find(p => p.codigoSku === item.sku);
+        const unitUsd = currentProd ? Number(currentProd.precioDolar || 0) : Number(item.usd || 0);
+        const subUsd = unitUsd * item.qty;
         totalUsd += subUsd;
-        return `${index + 1}. [${prod.codigo}] ${prod.producto} - Cant: ${entry.qty} ($${subUsd.toFixed(2)})`;
-      }).filter(Boolean);
+        lines.push(`• [${item.sku}] ${item.name} x${item.qty} = $${formatDecimal(subUsd)} (Bs. ${formatDecimal(subUsd * currentRate)})`);
+      });
 
-      const msg = `*PEDIDO - Catálogo Digital Hierro Sammy*\n` +
-        `👤 *Cliente / Empresa:* ${customerName}\n` +
-        `🪪 *Cédula / RIF:* ${customerId}\n` +
-        `💱 *Tasa BCV:* ${config.bcvRate.toLocaleString("es-VE", {minimumFractionDigits: 2})} Bs.\n` +
-        `----------------------------------\n` +
-        lines.join("\n") +
-        `\n----------------------------------\n` +
-        `💰 *TOTAL USD:* $${totalUsd.toFixed(2)}\n` +
-        `🇻🇪 *TOTAL BS:* Bs. ${(totalUsd * config.bcvRate).toLocaleString("es-VE", {minimumFractionDigits: 2})}`;
-
-      window.open(`https://wa.me/${config.whatsappPhone}?text=` + encodeURIComponent(msg), "_blank", "noopener,noreferrer");
+      lines.push("--------------------------------");
+      lines.push(`*Total USD:* $${formatDecimal(totalUsd)}`);
+      lines.push(`*Total Bs.:* Bs. ${formatDecimal(totalUsd * currentRate)}`);
+      return lines.join("\n");
     }
 
-    function showToast(message, type = "success") {
-      const container = document.getElementById("toast-container");
-      const toast = document.createElement("div");
-      toast.className = `toast-enter pointer-events-auto border-l-4 ${type === "error" ? "bg-red-600 text-white border-red-200" : "bg-samy-dark text-white border-samy-silver"} px-4 py-3 rounded shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 max-w-sm`;
-      toast.innerHTML = `<span>${type === "error" ? "⚠" : "✔"}</span><span>${message}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3500);
+    async function copyQuoteText() {
+      if (cart.length === 0) {
+        showToast("Agrega productos antes de copiar.", true);
+        return;
+      }
+      const text = buildQuoteMessage();
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("Resumen copiado al portapapeles.");
+      } catch (e) {
+        showToast("No se pudo copiar automáticamente.", true);
+      }
     }
 
-    window.onload = initApp;
+    function sendQuoteWhatsApp() {
+      if (cart.length === 0) {
+        showToast("Agrega productos antes de enviar.", true);
+        return;
+      }
+      const cleanPhone = WHATSAPP_NUMBER.replace(/\D/g, "");
+      const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(buildQuoteMessage())}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === "ferrepro_config" || e.key === "ferrepro_products" || e.key === "ferrepro_github_cfg") {
+        loadCatalog(false);
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadCart();
+      loadCatalog(false);
+    });
   </script>
 </body>
 </html>
