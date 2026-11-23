@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FACTURACIÓN Y BD DE FACTURAS | HIERRO SAMMY, C.A</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co/9kJ1CHYC/logo-transparete.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Barlow', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            samy: {
+              navy: '#153A6E',
+              royal: '#1E4E8C',
+              deep: '#0B1D36',
+              dark: '#0F2544',
+              steel: '#1E3557',
+              silver: '#CBD5E1',
+              chrome: '#94A3B8',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F1F5F9;
+      color: #0F172A;
+    }
+    h1, h2, h3, h4, .font-industrial {
+      font-family: 'Barlow', sans-serif;
+    }
+    .logo-glow-wrapper {
+      background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(226,232,240,0.92));
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+    }
+    @media print {
+      body * { visibility: hidden; }
+      #print-ticket-area, #print-ticket-area * { visibility: visible; }
+      #print-ticket-area {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white;
+        color: black;
+        padding: 16px;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- TOP BAR -->
+  <div class="bg-samy-deep text-white border-b border-slate-800 text-xs sm:text-sm py-2 px-4">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 bg-samy-steel px-2.5 py-1 rounded border border-slate-600/60">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-200 font-medium">Tasa BCV:</span>
+          <strong id="display-bcv-rate" class="text-samy-silver font-industrial text-sm sm:text-base">918,77 Bs.</strong>
+        </span>
+        <button onclick="openRateModal()" class="text-[11px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded font-bold transition cursor-pointer">
+          ✎ Ajustar Tasa
+        </button>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="invoice-counter-badge" class="bg-samy-navy text-samy-silver border border-slate-600 px-2.5 py-1 rounded font-mono text-xs font-bold">
+          Próxima Factura: #000001
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="bg-samy-dark text-white border-b-4 border-samy-chrome py-3.5 px-4 shadow-xl">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="logo-glow-wrapper px-2.5 py-1.5 rounded-lg border border-slate-300">
+          <img src="https://i.ibb.co/9kJ1CHYC/logo-transparete.png" alt="Hierro Sammy" class="h-11 sm:h-12 w-auto object-contain" />
+        </div>
+        <div>
+          <div class="font-industrial font-black text-xl sm:text-2xl uppercase tracking-wide leading-none">
+            HIERRO <span class="text-samy-silver">SAMMY, C.A</span> <span class="text-sky-400 text-base sm:text-lg">| FACTURACIÓN</span>
+          </div>
+          <div class="text-[11px] text-samy-chrome font-bold tracking-widest uppercase mt-1">
+            RIF: J-50055307-2 • Valencia, Carabobo
+          </div>
+        </div>
+      </div>
+
+      <!-- NAVEGACIÓN ENTRE MÓDULOS -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="switchTab('billing')" id="tab-btn-billing" class="bg-samy-silver text-samy-deep font-industrial font-black uppercase px-3.5 py-2 rounded text-xs sm:text-sm transition shadow cursor-pointer">
+          🧾 Facturar
+        </button>
+        <button onclick="switchTab('invoices')" id="tab-btn-invoices" class="bg-samy-steel hover:bg-samy-royal text-white border border-slate-600 font-industrial font-extrabold uppercase px-3.5 py-2 rounded text-xs sm:text-sm transition cursor-pointer">
+          📚 Facturas Emitidas (<span id="invoices-count-badge">0</span>)
+        </button>
+        <button onclick="switchTab('clients')" id="tab-btn-clients" class="bg-samy-steel hover:bg-samy-royal text-white border border-slate-600 font-industrial font-extrabold uppercase px-3.5 py-2 rounded text-xs sm:text-sm transition cursor-pointer">
+          👥 Clientes (<span id="clients-count-badge">0</span>)
+        </button>
+        <button onclick="openReversalAuthModal()" id="tab-btn-reversals" class="bg-red-950 hover:bg-red-800 text-red-200 border border-red-700 font-industrial font-extrabold uppercase px-3.5 py-2 rounded text-xs sm:text-sm transition flex items-center gap-1.5 cursor-pointer">
+          <span>🔒 Reversos</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 1: FACTURACIÓN                      -->
+    <!-- ========================================== -->
+    <section id="module-billing" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- COLUMNA IZQUIERDA (7 cols): CLIENTE + BUSCADOR DE PRODUCTOS + LISTA -->
+      <div class="lg:col-span-7 space-y-5">
+
+        <!-- BLOQUE A: BUSCADOR DE CLIENTE -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="font-industrial font-black text-lg uppercase text-samy-deep flex items-center gap-2">
+              <span class="w-2 h-5 bg-samy-navy rounded-xs inline-block"></span>
+              1. Datos del Cliente
+            </h2>
+            <span id="client-status-pill" class="text-[11px] font-bold px-2.5 py-0.5 rounded bg-amber-100 text-amber-800">
+              Sin cliente seleccionado
+            </span>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2.5 relative">
+            <div class="flex-1 relative">
+              <input
+                type="text"
+                id="client-search-input"
+                oninput="handleClientSearch()"
+                onfocus="handleClientSearch()"
+                placeholder="Buscar cliente por Cédula / RIF o Nombre..."
+                autocomplete="off"
+                class="w-full bg-slate-50 border-2 border-slate-300 focus:border-samy-navy focus:bg-white rounded-lg px-3.5 py-2.5 text-sm font-medium focus:outline-none transition"
+              />
+              <div id="client-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border-2 border-samy-navy rounded-lg shadow-2xl z-30 max-h-60 overflow-y-auto divide-y divide-slate-100"></div>
+            </div>
+
+            <button
+              type="button"
+              id="btn-open-register-client"
+              onclick="openRegisterClientModal()"
+              disabled
+              class="bg-slate-300 text-slate-500 cursor-not-allowed font-industrial font-extrabold uppercase px-4 py-2.5 rounded-lg text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shrink-0"
+            >
+              <span>+ Registrar Cliente</span>
+            </button>
+          </div>
+
+          <div id="selected-client-card" class="hidden mt-3.5 bg-samy-deep text-white rounded-lg p-3.5 border-l-4 border-emerald-400 flex items-center justify-between gap-3">
+            <div class="space-y-0.5 text-xs">
+              <div class="font-industrial font-black text-base uppercase text-white" id="sel-client-name">NOMBRE CLIENTE</div>
+              <div class="text-slate-300 flex flex-wrap gap-x-4 gap-y-1">
+                <span>🪪 <strong id="sel-client-doc" class="text-samy-silver">V-00000000</strong></span>
+                <span>📞 <span id="sel-client-phone">0414-0000000</span></span>
+                <span>📍 <span id="sel-client-address">Dirección</span></span>
+              </div>
+            </div>
+            <button type="button" onclick="clearSelectedClient()" class="bg-samy-steel hover:bg-red-600 text-white px-2.5 py-1.5 rounded text-xs font-bold transition cursor-pointer shrink-0">
+              Cambiar
+            </button>
+          </div>
+        </div>
+
+        <!-- BLOQUE B: BUSCADOR DE PRODUCTOS Y TABLA -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 class="font-industrial font-black text-lg uppercase text-samy-deep flex items-center gap-2">
+              <span class="w-2 h-5 bg-samy-navy rounded-xs inline-block"></span>
+              2. Agregar Productos a Facturar
+            </h2>
+            <span class="text-[11px] text-slate-500 font-semibold">Presiona <kbd class="bg-slate-200 px-1.5 py-0.5 rounded font-mono text-slate-800">Enter</kbd> para agregar rápido</span>
+          </div>
+
+          <div class="relative mb-4">
+            <div class="flex items-center">
+              <input
+                type="text"
+                id="product-search-input"
+                oninput="handleProductSearch()"
+                onkeydown="handleProductKeydown(event)"
+                placeholder="Escribe Código SKU o Nombre del producto y presiona ENTER..."
+                autocomplete="off"
+                class="w-full bg-slate-50 border-2 border-slate-300 focus:border-samy-navy focus:bg-white rounded-lg pl-3.5 pr-24 py-2.5 text-sm font-medium focus:outline-none transition"
+              />
+              <button
+                type="button"
+                onclick="addFirstMatchingProduct()"
+                class="absolute right-1.5 bg-samy-navy hover:bg-samy-royal text-white font-industrial font-bold uppercase text-xs px-3 py-1.5 rounded transition cursor-pointer"
+              >
+                + Agregar
+              </button>
+            </div>
+            <div id="product-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border-2 border-samy-navy rounded-lg shadow-2xl z-30 max-h-64 overflow-y-auto divide-y divide-slate-100"></div>
+          </div>
+
+          <div class="overflow-x-auto border border-slate-200 rounded-lg">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-samy-dark text-white font-industrial text-xs uppercase tracking-wider">
+                  <th class="py-2.5 px-2.5">Código</th>
+                  <th class="py-2.5 px-2.5">Nombre</th>
+                  <th class="py-2.5 px-2 text-center w-24">Cant.</th>
+                  <th class="py-2.5 px-2.5 text-right">Precio BCV</th>
+                  <th class="py-2.5 px-2.5 text-right">Precio $</th>
+                  <th class="py-2.5 px-2 text-center w-12">Quitar</th>
+                </tr>
+              </thead>
+              <tbody id="invoice-items-tbody" class="divide-y divide-slate-200 text-xs">
+                <tr>
+                  <td colspan="6" class="py-8 text-center text-slate-400 font-medium">
+                    No hay productos agregados en esta factura. Busca por código o nombre arriba.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA (5 cols): TOTALES + MÉTODOS DE PAGO EN VENEZUELA -->
+      <div class="lg:col-span-5 space-y-5">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 sticky top-4">
+          <h2 class="font-industrial font-black text-lg uppercase text-samy-deep flex items-center gap-2 mb-3">
+            <span class="w-2 h-5 bg-samy-navy rounded-xs inline-block"></span>
+            3. Resumen y Métodos de Pago (Venezuela)
+          </h2>
+
+          <div class="bg-samy-deep text-white rounded-xl p-4 mb-4 border border-slate-700 space-y-2">
+            <div class="flex justify-between items-center text-xs text-slate-300">
+              <span>Artículos en lista:</span>
+              <strong id="summary-items-count" class="text-white">0 unid.</strong>
+            </div>
+            <div class="flex justify-between items-center text-xs text-slate-300">
+              <span>Tasa BCV aplicada:</span>
+              <strong id="summary-bcv-rate" class="text-samy-silver">918,77 Bs./$</strong>
+            </div>
+            <div class="border-t border-slate-700 pt-2 flex justify-between items-baseline">
+              <span class="font-industrial font-bold uppercase text-sm text-slate-200">Total Divisas ($):</span>
+              <span id="summary-total-usd" class="font-industrial font-black text-3xl text-emerald-400">$0.00</span>
+            </div>
+            <div class="flex justify-between items-baseline">
+              <span class="font-industrial font-bold uppercase text-xs text-slate-300">Total Bolívares (BCV):</span>
+              <span id="summary-total-bs" class="font-industrial font-extrabold text-xl text-white">Bs. 0,00</span>
+            </div>
+          </div>
+
+          <div class="space-y-3 mb-4">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold uppercase text-slate-700">Método(s) de Pago Utilizado(s):</label>
+              <label class="inline-flex items-center gap-1.5 text-xs font-semibold text-samy-navy cursor-pointer">
+                <input type="checkbox" id="mixed-payment-toggle" onchange="toggleMixedPayment()" class="rounded border-slate-300 text-samy-navy focus:ring-samy-navy" />
+                <span>Pago Mixto (2 métodos)</span>
+              </label>
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Método Principal *</label>
+                  <select id="payment-method-1" onchange="updatePaymentCalculations()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-800 focus:border-samy-navy focus:outline-none">
+                    <option value="Pago Móvil (Bs.)">📲 Pago Móvil (Bs.)</option>
+                    <option value="Punto de Venta / Biopago (Bs.)">💳 Punto de Venta / Débito (Bs.)</option>
+                    <option value="Efectivo Divisas ($)">💵 Efectivo Divisas ($)</option>
+                    <option value="Efectivo Bolívares (Bs.)">💴 Efectivo Bolívares (Bs.)</option>
+                    <option value="Transferencia Bancaria (Bs.)">🏦 Transferencia Bancaria (Bs.)</option>
+                    <option value="Zelle ($)">⚡ Zelle ($)</option>
+                    <option value="Binance Pay / USDT">🪙 Binance Pay / USDT</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1" id="payment-amount-1-label">Monto Recibido</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="payment-amount-1"
+                    oninput="updatePaymentCalculations()"
+                    placeholder="0.00"
+                    class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-900 focus:border-samy-navy focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <input
+                  type="text"
+                  id="payment-ref-1"
+                  placeholder="Nro. de Referencia / Últimos 4 dígitos / Banco (Opcional)"
+                  class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:border-samy-navy focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div id="mixed-payment-box" class="hidden bg-slate-50 p-3 rounded-lg border border-samy-navy/40 space-y-2.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] font-bold text-samy-navy uppercase mb-1">Segundo Método</label>
+                  <select id="payment-method-2" onchange="updatePaymentCalculations()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-800 focus:border-samy-navy focus:outline-none">
+                    <option value="Pago Móvil (Bs.)">📲 Pago Móvil (Bs.)</option>
+                    <option value="Efectivo Bolívares (Bs.)">💴 Efectivo Bolívares (Bs.)</option>
+                    <option value="Punto de Venta / Biopago (Bs.)">💳 Punto de Venta / Débito (Bs.)</option>
+                    <option value="Efectivo Divisas ($)">💵 Efectivo Divisas ($)</option>
+                    <option value="Transferencia Bancaria (Bs.)">🏦 Transferencia Bancaria (Bs.)</option>
+                    <option value="Zelle ($)">⚡ Zelle ($)</option>
+                    <option value="Binance Pay / USDT">🪙 Binance Pay / USDT</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-samy-navy uppercase mb-1" id="payment-amount-2-label">Monto Complemento</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    id="payment-amount-2"
+                    oninput="updatePaymentCalculations()"
+                    placeholder="0.00"
+                    class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-900 focus:border-samy-navy focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <input
+                  type="text"
+                  id="payment-ref-2"
+                  placeholder="Referencia del segundo pago (Opcional)"
+                  class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:border-samy-navy focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div id="payment-balance-box" class="bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 flex items-center justify-between text-xs font-bold">
+              <span class="text-slate-600">Estado del Pago:</span>
+              <span id="payment-balance-status" class="text-slate-800">Pendiente por cubrir</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-12 gap-2.5">
+            <button
+              type="button"
+              onclick="resetCurrentInvoice()"
+              class="col-span-4 bg-slate-200 hover:bg-slate-300 text-slate-800 font-industrial font-extrabold uppercase py-3 px-3 rounded-lg text-xs transition cursor-pointer"
+            >
+              Limpiar
+            </button>
+            <button
+              type="button"
+              onclick="emitInvoice()"
+              class="col-span-8 bg-emerald-600 hover:bg-emerald-500 text-white font-industrial font-black uppercase py-3 px-4 rounded-lg text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>✔ Emitir Factura</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 2: BASE DE DATOS DE FACTURAS EMITIDAS -->
+    <!-- ========================================== -->
+    <section id="module-invoices" class="hidden space-y-5">
+      <!-- RESUMEN DE VENTAS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-4 border-l-4 border-samy-navy shadow-xs">
+          <div class="text-[11px] font-bold uppercase text-slate-500">Facturas Emitidas (Activas)</div>
+          <div id="db-stat-active-count" class="font-industrial font-black text-3xl text-samy-deep mt-1">0</div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4 border-l-4 border-emerald-500 shadow-xs">
+          <div class="text-[11px] font-bold uppercase text-slate-500">Total Facturado (USD)</div>
+          <div id="db-stat-total-usd" class="font-industrial font-black text-2xl sm:text-3xl text-emerald-700 mt-1">$0.00</div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4 border-l-4 border-sky-500 shadow-xs">
+          <div class="text-[11px] font-bold uppercase text-slate-500">Total Facturado (Bs. BCV)</div>
+          <div id="db-stat-total-bs" class="font-industrial font-black text-xl sm:text-2xl text-samy-navy mt-1">Bs. 0,00</div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4 border-l-4 border-red-500 shadow-xs">
+          <div class="text-[11px] font-bold uppercase text-slate-500">Facturas Reversadas</div>
+          <div id="db-stat-reversed-count" class="font-industrial font-black text-3xl text-red-600 mt-1">0</div>
+        </div>
+      </div>
+
+      <!-- TABLA Y FILTROS DE LA BASE DE DATOS DE FACTURAS -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+          <div>
+            <h2 class="font-industrial font-black text-xl uppercase text-samy-deep">Base de Datos de Facturas Emitidas</h2>
+            <p class="text-xs text-slate-500">Consulta histórica de comprobantes, métodos de pago, montos en divisas y bolívares.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="exportInvoicesCsv()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-industrial font-extrabold uppercase px-3.5 py-2 rounded-lg text-xs transition shadow cursor-pointer">
+              ↓ Exportar CSV
+            </button>
+            <button type="button" onclick="exportInvoicesJson()" class="bg-samy-navy hover:bg-samy-royal text-white font-industrial font-extrabold uppercase px-3.5 py-2 rounded-lg text-xs transition shadow cursor-pointer">
+              ↓ Respaldo JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+          <div class="md:col-span-6">
+            <input
+              type="text"
+              id="db-invoice-search"
+              oninput="renderInvoicesDatabase()"
+              placeholder="Buscar por Nro. de factura (#000001), Cédula/RIF o Cliente..."
+              class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2 text-xs font-medium focus:border-samy-navy focus:outline-none"
+            />
+          </div>
+          <div class="md:col-span-3">
+            <select id="db-invoice-status-filter" onchange="renderInvoicesDatabase()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 focus:border-samy-navy focus:outline-none">
+              <option value="ALL">Estado: Todas</option>
+              <option value="EMITIDA">Solo Emitidas</option>
+              <option value="REVERSADA">Solo Reversadas</option>
+            </select>
+          </div>
+          <div class="md:col-span-3">
+            <select id="db-invoice-method-filter" onchange="renderInvoicesDatabase()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 focus:border-samy-navy focus:outline-none">
+              <option value="ALL">Método de Pago: Todos</option>
+              <option value="Pago Móvil">Pago Móvil</option>
+              <option value="Punto de Venta">Punto de Venta</option>
+              <option value="Efectivo Divisas">Efectivo Divisas ($)</option>
+              <option value="Efectivo Bolívares">Efectivo Bolívares (Bs.)</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Zelle">Zelle</option>
+              <option value="Binance">Binance / USDT</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-lg">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-samy-dark text-white font-industrial text-xs uppercase">
+                <th class="py-2.5 px-3">Factura</th>
+                <th class="py-2.5 px-3">Fecha / Hora</th>
+                <th class="py-2.5 px-3">Cliente / RIF</th>
+                <th class="py-2.5 px-3">Método de Pago</th>
+                <th class="py-2.5 px-3 text-right">Total USD</th>
+                <th class="py-2.5 px-3 text-right">Total Bs.</th>
+                <th class="py-2.5 px-3 text-center">Estado</th>
+                <th class="py-2.5 px-3 text-center">Comprobante</th>
+              </tr>
+            </thead>
+            <tbody id="db-invoices-tbody" class="divide-y divide-slate-200 text-xs"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 3: DIRECTORIO DE CLIENTES           -->
+    <!-- ========================================== -->
+    <section id="module-clients" class="hidden space-y-5">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="font-industrial font-black text-xl uppercase text-samy-deep">Directorio de Clientes Registrados</h2>
+            <p class="text-xs text-slate-500">Consulta o registra nuevos clientes para agilizar la facturación.</p>
+          </div>
+          <button onclick="openRegisterClientModal()" class="bg-samy-navy hover:bg-samy-royal text-white font-industrial font-extrabold uppercase px-4 py-2 rounded-lg text-xs transition shadow cursor-pointer">
+            + Nuevo Cliente
+          </button>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-lg">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-samy-dark text-white font-industrial text-xs uppercase">
+                <th class="py-2.5 px-3">Cédula / RIF</th>
+                <th class="py-2.5 px-3">Nombre / Empresa</th>
+                <th class="py-2.5 px-3">Teléfono</th>
+                <th class="py-2.5 px-3">Dirección Corta</th>
+                <th class="py-2.5 px-3 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="clients-directory-tbody" class="divide-y divide-slate-200 text-xs"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 4: DEVOLUCIÓN / REVERSO DE FACTURAS -->
+    <!-- ========================================== -->
+    <section id="module-reversals" class="hidden space-y-5">
+      <div class="bg-white rounded-xl shadow-sm border-2 border-red-200 p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200">
+          <div>
+            <div class="inline-flex items-center gap-1.5 bg-red-100 text-red-800 text-[11px] font-bold px-2.5 py-0.5 rounded uppercase mb-1">
+              <span>🔓 Sesión de Supervisor Autorizada</span>
+            </div>
+            <h2 class="font-industrial font-black text-xl uppercase text-samy-deep">Reverso / Devolución de Facturas</h2>
+            <p class="text-xs text-slate-500">Al reversar una factura, su estado cambia a REVERSADA y los productos regresan automáticamente al stock.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openChangePinModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-3 py-2 rounded-lg text-xs transition cursor-pointer">
+              🔑 Cambiar Clave
+            </button>
+            <button onclick="lockReversalModule()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-2 rounded-lg text-xs transition cursor-pointer">
+              🔒 Bloquear Módulo
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <input
+            type="text"
+            id="invoice-history-search"
+            oninput="renderInvoiceHistory()"
+            placeholder="Buscar factura por Nro. (#000001), Cédula/RIF o Nombre del cliente..."
+            class="w-full sm:w-96 bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2 text-xs font-medium focus:border-samy-navy focus:outline-none"
+          />
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-lg">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-samy-dark text-white font-industrial text-xs uppercase">
+                <th class="py-2.5 px-3">Nro. Factura</th>
+                <th class="py-2.5 px-3">Fecha y Hora</th>
+                <th class="py-2.5 px-3">Cliente</th>
+                <th class="py-2.5 px-3 text-right">Total $</th>
+                <th class="py-2.5 px-3 text-right">Total Bs.</th>
+                <th class="py-2.5 px-3 text-center">Estado</th>
+                <th class="py-2.5 px-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="invoices-history-tbody" class="divide-y divide-slate-200 text-xs"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: REGISTRO DE CLIENTE -->
+  <div id="register-client-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full overflow-hidden shadow-2xl border-2 border-samy-navy">
+      <div class="bg-samy-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-samy-chrome">
+        <h3 class="font-industrial font-black text-lg uppercase">Registro de Nuevo Cliente</h3>
+        <button type="button" onclick="closeRegisterClientModal()" class="text-slate-300 hover:text-white font-bold text-xl cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="saveNewClient(event)" class="p-5 space-y-3.5 text-xs">
+        <p class="text-slate-600">Completa los datos del cliente para registrarlo y continuar directamente con su factura.</p>
+        <div>
+          <label class="block font-bold uppercase text-slate-700 mb-1">Nombre / Empresa *</label>
+          <input type="text" id="reg-client-name" required placeholder="Ej: Construcciones El Roble C.A. / Juan Pérez" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:border-samy-navy focus:outline-none" />
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-700 mb-1">Cédula / RIF *</label>
+          <input type="text" id="reg-client-doc" required placeholder="Ej: V-18456789 o J-40123456-7" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono uppercase font-bold focus:border-samy-navy focus:outline-none" />
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-700 mb-1">Teléfono *</label>
+          <input type="tel" id="reg-client-phone" required placeholder="Ej: 0414-4077442" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium focus:border-samy-navy focus:outline-none" />
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-700 mb-1">Dirección Corta *</label>
+          <input type="text" id="reg-client-address" required placeholder="Ej: Urb. La Isabelica, Sector 4, Valencia" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-medium focus:border-samy-navy focus:outline-none" />
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="closeRegisterClientModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-samy-navy hover:bg-samy-royal text-white font-industrial font-extrabold uppercase px-5 py-2 rounded-lg shadow cursor-pointer">
+            Registrar y Facturar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CLAVE DE SEGURIDAD PARA REVERSO -->
+  <div id="reversal-auth-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-sm w-full overflow-hidden shadow-2xl border-2 border-red-600">
+      <div class="bg-samy-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-red-500">
+        <h3 class="font-industrial font-black text-base uppercase text-red-400">🔒 Acceso Restringido — Devoluciones</h3>
+        <button type="button" onclick="closeReversalAuthModal()" class="text-slate-300 hover:text-white font-bold text-lg cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="verifyReversalPin(event)" class="p-5 space-y-3.5 text-xs">
+        <p class="text-slate-600">Ingresa la clave de autorización para acceder al módulo de devoluciones y reverso de facturas.</p>
+        <div>
+          <label class="block font-bold uppercase text-slate-700 mb-1">Clave de Supervisor *</label>
+          <input type="password" id="reversal-pin-input" required placeholder="••••" class="w-full border-2 border-slate-300 rounded-lg px-3 py-2.5 text-center text-lg font-mono tracking-widest font-bold focus:border-red-600 focus:outline-none" />
+          <p class="text-[11px] text-slate-400 mt-1 text-center">Clave inicial por defecto: <strong>1234</strong></p>
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="closeReversalAuthModal()" class="bg-slate-200 hover:bg-slate-300 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-industrial font-extrabold uppercase px-5 py-2 rounded-lg cursor-pointer">Ingresar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMAR REVERSO -->
+  <div id="confirm-reversal-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full overflow-hidden shadow-2xl border-2 border-red-600">
+      <div class="bg-samy-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-red-500">
+        <h3 class="font-industrial font-black text-base uppercase text-red-400">Confirmar Reverso de Factura</h3>
+        <button type="button" onclick="closeConfirmReversalModal()" class="text-slate-300 hover:text-white font-bold text-lg cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="executeInvoiceReversal(event)" class="p-5 space-y-3.5 text-xs">
+        <input type="hidden" id="reversal-target-id" />
+        <p id="reversal-target-summary" class="text-slate-700 font-medium text-sm"></p>
+        <div>
+          <label class="block font-bold uppercase text-slate-700 mb-1">Motivo de la Devolución / Reverso *</label>
+          <textarea id="reversal-reason-input" rows="2" required placeholder="Ej: Producto defectuoso, cambio de medida por el cliente..." class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:border-red-600 focus:outline-none"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="closeConfirmReversalModal()" class="bg-slate-200 hover:bg-slate-300 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-industrial font-extrabold uppercase px-4 py-2 rounded-lg cursor-pointer">Reversar y Devolver Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CAMBIAR CLAVE SUPERVISOR -->
+  <div id="change-pin-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-sm w-full overflow-hidden shadow-2xl border-2 border-samy-navy">
+      <div class="bg-samy-dark text-white px-5 py-3 flex items-center justify-between">
+        <h3 class="font-industrial font-black text-base uppercase">Actualizar Clave de Supervisor</h3>
+        <button type="button" onclick="closeChangePinModal()" class="text-slate-300 hover:text-white font-bold text-lg cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="saveNewPin(event)" class="p-5 space-y-3 text-xs">
+        <div>
+          <label class="block font-bold uppercase text-slate-700 mb-1">Nueva Clave (mínimo 4 caracteres) *</label>
+          <input type="password" id="new-pin-input" minlength="4" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-center font-mono text-base font-bold" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="closeChangePinModal()" class="bg-slate-200 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-samy-navy text-white font-bold px-4 py-2 rounded-lg cursor-pointer">Guardar Clave</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AJUSTAR TASA BCV -->
+  <div id="rate-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-sm w-full overflow-hidden shadow-2xl border-2 border-samy-navy">
+      <div class="bg-samy-dark text-white px-5 py-3 flex items-center justify-between">
+        <h3 class="font-industrial font-black text-base uppercase">Tasa de Cambio BCV</h3>
+        <button type="button" onclick="closeRateModal()" class="text-slate-300 hover:text-white font-bold text-lg cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="saveManualRate(event)" class="p-5 space-y-3 text-xs">
+        <div>
+          <label class="block font-bold uppercase text-slate-700 mb-1">Tasa BCV (Bs. por 1 USD) *</label>
+          <input type="number" step="0.01" min="0.01" id="manual-rate-input" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-base font-bold" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="closeRateModal()" class="bg-slate-200 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-samy-navy text-white font-bold px-4 py-2 rounded-lg cursor-pointer">Aplicar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: COMPROBANTE DE FACTURA EMITIDA -->
+  <div id="receipt-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-lg w-full overflow-hidden shadow-2xl border-2 border-samy-navy max-h-[92vh] flex flex-col">
+      <div class="bg-samy-dark text-white px-5 py-3 flex items-center justify-between no-print">
+        <h3 id="receipt-modal-title" class="font-industrial font-black text-base uppercase">Comprobante de Venta</h3>
+        <button type="button" onclick="closeReceiptModal()" class="text-slate-300 hover:text-white font-bold text-xl cursor-pointer">✕</button>
+      </div>
+      <div id="print-ticket-area" class="p-6 overflow-y-auto text-xs space-y-4 font-sans"></div>
+      <div class="bg-slate-100 px-5 py-3 border-t flex justify-end gap-2 no-print">
+        <button type="button" onclick="closeReceiptModal()" class="bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold px-4 py-2 rounded-lg text-xs cursor-pointer">Cerrar</button>
+        <button type="button" onclick="printInvoiceReceipt()" class="bg-samy-navy hover:bg-samy-royal text-white font-industrial font-extrabold uppercase px-5 py-2 rounded-lg text-xs shadow cursor-pointer">
+          🖨 Imprimir / Guardar PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none no-print"></div>
+
+  <script>
+    const KEYS = {
+      PRODUCTS: "ferrepro_products",
+      CONFIG: "ferrepro_config",
+      CLIENTS: "hierrosammy_clients",
+      INVOICES: "hierrosammy_invoices",
+      PIN: "hierrosammy_supervisor_pin"
+    };
+
+    const BASE_TITLE = document.title;
+    let products = [];
+    let clients = [];
+    let invoices = [];
+    let currentItems = [];
+    let selectedClient = null;
+    let bcvRate = 918.77;
+    let isReversalUnlocked = false;
+    let activeReceiptInvoice = null;
+
+    function getInvoiceFileName(inv) {
+      const cleanNum = String(inv?.number || "").trim() || "#000001";
+      return `Factura Hierro Sammy ${cleanNum}`.replace(/[\\/:*?"<>|]/g, "").trim();
+    }
+
+    async function initBillingSystem() {
+      try {
+        const savedCfg = JSON.parse(localStorage.getItem(KEYS.CONFIG) || "{}");
+        if (savedCfg.bcvRate > 0) bcvRate = Number(savedCfg.bcvRate);
+      } catch (e) {}
+
+      await loadInventoryProducts();
+
+      try {
+        clients = JSON.parse(localStorage.getItem(KEYS.CLIENTS) || "[]");
+      } catch (e) { clients = []; }
+
+      try {
+        invoices = JSON.parse(localStorage.getItem(KEYS.INVOICES) || "[]");
+      } catch (e) { invoices = []; }
+
+      await fetchBcvRateAuto();
+
+      updateGlobalUI();
+      renderInvoiceTable();
+      updatePaymentCalculations();
+    }
+
+    async function loadInventoryProducts() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(KEYS.PRODUCTS) || "[]");
+        if (Array.isArray(stored) && stored.length > 0) {
+          products = stored.map(p => ({
+            codigo: (p.codigoSku || p.codigo || "").toUpperCase(),
+            nombre: p.nombreProducto || p.producto || "",
+            categoria: p.categoria || "GENERAL",
+            stock: Number(p.stock) || 0,
+            precioUsd: Number(p.precioDolar !== undefined ? p.precioDolar : p.precioUsd) || 0
+          }));
+          return;
+        }
+      } catch (e) {}
+
+      try {
+        const res = await fetch(`Catalogof.csv?v=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) {
+          const text = await res.text();
+          const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+          const parsed = [];
+          for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(";");
+            if (cols.length >= 6 && cols[0].trim()) {
+              parsed.push({
+                codigo: cols[0].trim().toUpperCase(),
+                nombre: cols[1].trim(),
+                categoria: (cols[2] || "GENERAL").trim(),
+                stock: parseInt(cols[4], 10) || 0,
+                precioUsd: parseFloat((cols[5] || "0").replace(/\$/g, "").replace(/\./g, "").replace(",", ".")) || 0
+              });
+            }
+          }
+          if (parsed.length > 0) {
+            products = parsed;
+            return;
+          }
+        }
+      } catch (e) {}
+
+      products = [
+        { codigo: "UCS18578", nombre: "Sierra Circular 7-1/4 1200W", categoria: "HERRAMIENTAS", stock: 15, precioUsd: 30.00 },
+        { codigo: "UPS2408", nombre: "Lijadora Orbital De Mano 240W", categoria: "HERRAMIENTAS", stock: 10, precioUsd: 25.00 },
+        { codigo: "UCOS223589", nombre: "Sierra Cortadora de Metal 14\"", categoria: "HERRAMIENTAS", stock: 20, precioUsd: 15.00 },
+        { codigo: "CAB-38", nombre: "Cabilla Corrugada 3/8 x 6m", categoria: "HIERRO", stock: 120, precioUsd: 6.50 },
+        { codigo: "ELEC-6013", nombre: "Electrodo 6013 1/8 (Kg)", categoria: "SOLDADURA", stock: 85, precioUsd: 4.20 }
+      ];
+    }
+
+    async function fetchBcvRateAuto() {
+      try {
+        const res = await fetch(`https://ve.dolarapi.com/v1/dolares/oficial?nocache=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          const val = parseFloat(data?.promedio ?? data?.venta ?? 0);
+          if (val > 0) {
+            bcvRate = Number(val.toFixed(4));
+            localStorage.setItem(KEYS.CONFIG, JSON.stringify({ bcvRate }));
+          }
+        }
+      } catch (e) {}
+    }
+
+    function saveProductsState() {
+      try {
+        const existingRaw = JSON.parse(localStorage.getItem(KEYS.PRODUCTS) || "[]");
+        if (Array.isArray(existingRaw) && existingRaw.length > 0) {
+          const updated = existingRaw.map(item => {
+            const sku = (item.codigoSku || item.codigo || "").toUpperCase();
+            const match = products.find(p => p.codigo === sku);
+            if (match) return { ...item, stock: match.stock };
+            return item;
+          });
+          localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(updated));
+        } else {
+          localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products.map(p => ({
+            codigoSku: p.codigo,
+            nombreProducto: p.nombre,
+            categoria: p.categoria,
+            stock: p.stock,
+            precioDolar: p.precioUsd,
+            precioBcv: Number((p.precioUsd * bcvRate).toFixed(2)),
+            tasaCambio: bcvRate
+          }))));
+        }
+      } catch (e) {}
+    }
+
+    function updateGlobalUI() {
+      const rateStr = formatBs(bcvRate) + " Bs.";
+      document.getElementById("display-bcv-rate").textContent = rateStr;
+      document.getElementById("summary-bcv-rate").textContent = formatBs(bcvRate) + " Bs./$";
+      document.getElementById("clients-count-badge").textContent = clients.length;
+      document.getElementById("invoices-count-badge").textContent = invoices.length;
+      const nextNum = String(invoices.length + 1).padStart(6, "0");
+      document.getElementById("invoice-counter-badge").textContent = `Próxima Factura: #${nextNum}`;
+      renderInvoiceTable();
+    }
+
+    function switchTab(tabName) {
+      document.getElementById("module-billing").classList.add("hidden");
+      document.getElementById("module-invoices").classList.add("hidden");
+      document.getElementById("module-clients").classList.add("hidden");
+      document.getElementById("module-reversals").classList.add("hidden");
+
+      const inactiveClass = "bg-samy-steel hover:bg-samy-royal text-white border border-slate-600 font-industrial font-extrabold uppercase px-3.5 py-2 rounded text-xs sm:text-sm transition cursor-pointer";
+      const activeClass = "bg-samy-silver text-samy-deep font-industrial font-black uppercase px-3.5 py-2 rounded text-xs sm:text-sm transition shadow cursor-pointer";
+
+      document.getElementById("tab-btn-billing").className = inactiveClass;
+      document.getElementById("tab-btn-invoices").className = inactiveClass;
+      document.getElementById("tab-btn-clients").className = inactiveClass;
+
+      if (tabName === "billing") {
+        document.getElementById("module-billing").classList.remove("hidden");
+        document.getElementById("tab-btn-billing").className = activeClass;
+      } else if (tabName === "invoices") {
+        document.getElementById("module-invoices").classList.remove("hidden");
+        document.getElementById("tab-btn-invoices").className = activeClass;
+        renderInvoicesDatabase();
+      } else if (tabName === "clients") {
+        document.getElementById("module-clients").classList.remove("hidden");
+        document.getElementById("tab-btn-clients").className = activeClass;
+        renderClientsDirectory();
+      } else if (tabName === "reversals") {
+        document.getElementById("module-reversals").classList.remove("hidden");
+        renderInvoiceHistory();
+      }
+    }
+
+    // ==========================================
+    // BASE DE DATOS DE FACTURAS EMITIDAS
+    // ==========================================
+    function renderInvoicesDatabase() {
+      const activeInvoices = invoices.filter(i => i.status !== "REVERSADA");
+      const reversedInvoices = invoices.filter(i => i.status === "REVERSADA");
+
+      const sumUsd = activeInvoices.reduce((acc, i) => acc + Number(i.totalUsd || 0), 0);
+      const sumBs = activeInvoices.reduce((acc, i) => acc + Number(i.totalBs || 0), 0);
+
+      document.getElementById("db-stat-active-count").textContent = activeInvoices.length;
+      document.getElementById("db-stat-total-usd").textContent = "$" + sumUsd.toFixed(2);
+      document.getElementById("db-stat-total-bs").textContent = "Bs. " + formatBs(sumBs);
+      document.getElementById("db-stat-reversed-count").textContent = reversedInvoices.length;
+
+      const q = (document.getElementById("db-invoice-search").value || "").trim().toLowerCase();
+      const statusFilter = document.getElementById("db-invoice-status-filter").value;
+      const methodFilter = document.getElementById("db-invoice-method-filter").value;
+
+      const filtered = invoices.filter(inv => {
+        const matchesQuery = !q ||
+          inv.number.toLowerCase().includes(q) ||
+          inv.client.doc.toLowerCase().includes(q) ||
+          inv.client.name.toLowerCase().includes(q);
+
+        const matchesStatus = statusFilter === "ALL" || inv.status === statusFilter;
+
+        const methodsText = (inv.payments || []).map(p => p.method).join(" ");
+        const matchesMethod = methodFilter === "ALL" || methodsText.includes(methodFilter);
+
+        return matchesQuery && matchesStatus && matchesMethod;
+      });
+
+      const tbody = document.getElementById("db-invoices-tbody");
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400 font-medium">No hay facturas registradas que coincidan con los filtros.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(inv => {
+        const isReversed = inv.status === "REVERSADA";
+        const methodsHtml = (inv.payments || []).map(p =>
+          `<div class="text-[11px] font-semibold text-slate-700">• ${escapeHtml(p.method)} ${p.ref ? `<span class="text-slate-400">(${escapeHtml(p.ref)})</span>` : ''}</div>`
+        ).join("");
+
+        return `
+          <tr class="${isReversed ? 'bg-red-50/60' : 'hover:bg-slate-50'}">
+            <td class="py-2.5 px-3 font-mono font-bold text-samy-navy whitespace-nowrap">${inv.number}</td>
+            <td class="py-2.5 px-3 text-slate-600 whitespace-nowrap">${inv.date}</td>
+            <td class="py-2.5 px-3">
+              <div class="font-bold uppercase text-slate-900">${escapeHtml(inv.client.name)}</div>
+              <div class="text-[11px] text-slate-500 font-mono">${escapeHtml(inv.client.doc)}</div>
+            </td>
+            <td class="py-2.5 px-3">${methodsHtml}</td>
+            <td class="py-2.5 px-3 text-right font-industrial font-black text-sm text-emerald-700 whitespace-nowrap">$${Number(inv.totalUsd).toFixed(2)}</td>
+            <td class="py-2.5 px-3 text-right font-bold text-slate-800 whitespace-nowrap">Bs. ${formatBs(inv.totalBs)}</td>
+            <td class="py-2.5 px-3 text-center">
+              <span class="px-2 py-0.5 rounded font-bold text-[10px] uppercase ${isReversed ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'}">
+                ${inv.status}
+              </span>
+            </td>
+            <td class="py-2.5 px-3 text-center">
+              <button onclick="viewInvoiceById('${inv.id}')" class="bg-samy-navy hover:bg-samy-royal text-white font-bold px-2.5 py-1 rounded text-[11px] cursor-pointer">
+                Ver / PDF
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function exportInvoicesCsv() {
+      if (invoices.length === 0) {
+        showToast("No hay facturas para exportar.", "error");
+        return;
+      }
+      const sep = ";";
+      const header = ["NUMERO", "FECHA", "CLIENTE", "CEDULA_RIF", "TASA_BCV", "TOTAL_USD", "TOTAL_BS", "METODOS_PAGO", "ESTADO", "MOTIVO_REVERSO"].join(sep);
+      const rows = invoices.map(inv => {
+        const payStr = (inv.payments || []).map(p => `${p.method}: ${p.amount}${p.ref ? ` [Ref: ${p.ref}]` : ''}`).join(" | ");
+        return [
+          inv.number,
+          inv.date,
+          inv.client.name,
+          inv.client.doc,
+          String(inv.bcvRate).replace(".", ","),
+          String(inv.totalUsd).replace(".", ","),
+          String(inv.totalBs).replace(".", ","),
+          payStr,
+          inv.status,
+          inv.reversalReason || ""
+        ].map(v => `"${String(v || "").replace(/"/g, '""')}"`).join(sep);
+      });
+
+      const blob = new Blob(["\uFEFF" + [header, ...rows].join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Facturas_HierroSammy_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("Base de datos de facturas exportada en CSV.");
+    }
+
+    function exportInvoicesJson() {
+      if (invoices.length === 0) {
+        showToast("No hay facturas para respaldar.", "error");
+        return;
+      }
+      const blob = new Blob([JSON.stringify(invoices, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Respaldo_Facturas_HierroSammy_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("Respaldo JSON de facturas descargado.");
+    }
+
+    // ==========================================
+    // CLIENTES
+    // ==========================================
+    function handleClientSearch() {
+      const input = document.getElementById("client-search-input");
+      const query = input.value.trim().toLowerCase();
+      const dropdown = document.getElementById("client-dropdown");
+
+      if (!query) {
+        dropdown.classList.add("hidden");
+        setRegisterButtonState(false);
+        return;
+      }
+
+      const matches = clients.filter(c =>
+        c.doc.toLowerCase().includes(query) ||
+        c.name.toLowerCase().includes(query)
+      );
+
+      if (matches.length > 0) {
+        dropdown.innerHTML = matches.map(c => `
+          <div onclick="selectClient('${c.id}')" class="p-3 hover:bg-slate-100 cursor-pointer flex items-center justify-between transition">
+            <div>
+              <div class="font-industrial font-extrabold text-sm text-samy-deep uppercase">${escapeHtml(c.name)}</div>
+              <div class="text-xs text-slate-500">🪪 ${escapeHtml(c.doc)} • 📞 ${escapeHtml(c.phone)}</div>
+            </div>
+            <span class="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded">Seleccionar</span>
+          </div>
+        `).join("");
+        dropdown.classList.remove("hidden");
+        setRegisterButtonState(false);
+      } else {
+        dropdown.innerHTML = `
+          <div class="p-3 bg-amber-50 flex items-center justify-between gap-2">
+            <span class="text-xs font-semibold text-amber-900">Cliente no encontrado en la base de datos.</span>
+            <button type="button" onclick="openRegisterClientModal()" class="bg-samy-navy text-white font-bold text-xs px-3 py-1.5 rounded cursor-pointer">
+              + Registrar Ahora
+            </button>
+          </div>
+        `;
+        dropdown.classList.remove("hidden");
+        setRegisterButtonState(true);
+      }
+    }
+
+    function setRegisterButtonState(active) {
+      const regBtn = document.getElementById("btn-open-register-client");
+      if (active) {
+        regBtn.disabled = false;
+        regBtn.className = "bg-amber-500 hover:bg-amber-400 text-samy-deep font-industrial font-black uppercase px-4 py-2.5 rounded-lg text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-1.5 shrink-0 cursor-pointer animate-pulse";
+      } else {
+        regBtn.disabled = true;
+        regBtn.className = "bg-slate-300 text-slate-500 cursor-not-allowed font-industrial font-extrabold uppercase px-4 py-2.5 rounded-lg text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shrink-0";
+      }
+    }
+
+    function selectClient(clientId) {
+      const found = clients.find(c => c.id === clientId);
+      if (!found) return;
+
+      selectedClient = found;
+      document.getElementById("client-search-input").value = "";
+      document.getElementById("client-dropdown").classList.add("hidden");
+      setRegisterButtonState(false);
+
+      document.getElementById("sel-client-name").textContent = found.name;
+      document.getElementById("sel-client-doc").textContent = found.doc;
+      document.getElementById("sel-client-phone").textContent = found.phone;
+      document.getElementById("sel-client-address").textContent = found.address;
+
+      document.getElementById("selected-client-card").classList.remove("hidden");
+      const pill = document.getElementById("client-status-pill");
+      pill.textContent = "✔ Cliente verificado";
+      pill.className = "text-[11px] font-bold px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800";
+      document.getElementById("product-search-input").focus();
+    }
+
+    function clearSelectedClient() {
+      selectedClient = null;
+      document.getElementById("selected-client-card").classList.add("hidden");
+      const pill = document.getElementById("client-status-pill");
+      pill.textContent = "Sin cliente seleccionado";
+      pill.className = "text-[11px] font-bold px-2.5 py-0.5 rounded bg-amber-100 text-amber-800";
+      document.getElementById("client-search-input").focus();
+    }
+
+    function openRegisterClientModal() {
+      const rawQuery = document.getElementById("client-search-input").value.trim();
+      document.getElementById("client-dropdown").classList.add("hidden");
+
+      if (/^[VvJjEeGgPp]?-?\d+/.test(rawQuery)) {
+        document.getElementById("reg-client-doc").value = rawQuery.toUpperCase();
+        document.getElementById("reg-client-name").value = "";
+      } else {
+        document.getElementById("reg-client-name").value = rawQuery;
+        document.getElementById("reg-client-doc").value = "";
+      }
+      document.getElementById("reg-client-phone").value = "";
+      document.getElementById("reg-client-address").value = "";
+      document.getElementById("register-client-modal").classList.remove("hidden");
+    }
+
+    function closeRegisterClientModal() {
+      document.getElementById("register-client-modal").classList.add("hidden");
+    }
+
+    function saveNewClient(event) {
+      event.preventDefault();
+      const name = document.getElementById("reg-client-name").value.trim();
+      const doc = document.getElementById("reg-client-doc").value.trim().toUpperCase();
+      const phone = document.getElementById("reg-client-phone").value.trim();
+      const address = document.getElementById("reg-client-address").value.trim();
+
+      const duplicate = clients.find(c => c.doc.toUpperCase() === doc);
+      if (duplicate) {
+        showToast("Ya existe un cliente registrado con esa Cédula/RIF.", "error");
+        selectClient(duplicate.id);
+        closeRegisterClientModal();
+        return;
+      }
+
+      const newClient = { id: "CLI-" + Date.now(), name, doc, phone, address };
+      clients.push(newClient);
+      localStorage.setItem(KEYS.CLIENTS, JSON.stringify(clients));
+      updateGlobalUI();
+      closeRegisterClientModal();
+      switchTab("billing");
+      selectClient(newClient.id);
+      showToast(`Cliente ${newClient.name} registrado y seleccionado.`);
+    }
+
+    function renderClientsDirectory() {
+      const tbody = document.getElementById("clients-directory-tbody");
+      if (clients.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">No hay clientes registrados aún.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = clients.map(c => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2.5 px-3 font-mono font-bold text-samy-navy">${escapeHtml(c.doc)}</td>
+          <td class="py-2.5 px-3 font-bold uppercase">${escapeHtml(c.name)}</td>
+          <td class="py-2.5 px-3">${escapeHtml(c.phone)}</td>
+          <td class="py-2.5 px-3 text-slate-600">${escapeHtml(c.address)}</td>
+          <td class="py-2.5 px-3 text-center">
+            <button onclick="selectClient('${c.id}'); switchTab('billing');" class="bg-samy-navy hover:bg-samy-royal text-white font-bold px-3 py-1 rounded text-[11px] cursor-pointer">
+              Facturar
+            </button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    // ==========================================
+    // PRODUCTOS Y LISTA DE FACTURA
+    // ==========================================
+    function handleProductSearch() {
+      const query = document.getElementById("product-search-input").value.trim().toLowerCase();
+      const dropdown = document.getElementById("product-dropdown");
+
+      if (!query) {
+        dropdown.classList.add("hidden");
+        return;
+      }
+
+      const matches = products.filter(p =>
+        p.codigo.toLowerCase().includes(query) ||
+        p.nombre.toLowerCase().includes(query)
+      ).slice(0, 10);
+
+      if (matches.length === 0) {
+        dropdown.innerHTML = `<div class="p-3 text-xs text-slate-500">No se encontraron productos con "${escapeHtml(query)}".</div>`;
+        dropdown.classList.remove("hidden");
+        return;
+      }
+
+      dropdown.innerHTML = matches.map(p => {
+        const priceBs = p.precioUsd * bcvRate;
+        const outOfStock = p.stock <= 0;
+        return `
+          <div onclick="${outOfStock ? '' : `addProductToInvoice('${p.codigo}')`}" class="p-2.5 ${outOfStock ? 'opacity-50 bg-red-50 cursor-not-allowed' : 'hover:bg-slate-100 cursor-pointer'} flex items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="bg-samy-navy text-white font-mono font-bold text-[11px] px-1.5 py-0.5 rounded">${escapeHtml(p.codigo)}</span>
+                <span class="font-industrial font-extrabold text-sm text-samy-deep uppercase">${escapeHtml(p.nombre)}</span>
+              </div>
+              <div class="text-[11px] text-slate-500 mt-0.5">Stock disponible: <strong>${p.stock} u.</strong></div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="font-industrial font-black text-sm text-emerald-700">$${p.precioUsd.toFixed(2)}</div>
+              <div class="text-[11px] font-bold text-slate-600">Bs. ${formatBs(priceBs)}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+      dropdown.classList.remove("hidden");
+    }
+
+    function handleProductKeydown(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addFirstMatchingProduct();
+      }
+    }
+
+    function addFirstMatchingProduct() {
+      const query = document.getElementById("product-search-input").value.trim().toLowerCase();
+      if (!query) return;
+
+      let match = products.find(p => p.codigo.toLowerCase() === query);
+      if (!match) {
+        match = products.find(p => p.codigo.toLowerCase().includes(query) || p.nombre.toLowerCase().includes(query));
+      }
+      if (!match) {
+        showToast("Producto no encontrado en el inventario.", "error");
+        return;
+      }
+      addProductToInvoice(match.codigo);
+    }
+
+    function addProductToInvoice(codigo) {
+      const prod = products.find(p => p.codigo === codigo);
+      if (!prod) return;
+      if (prod.stock <= 0) {
+        showToast(`El producto [${prod.codigo}] está agotado.`, "error");
+        return;
+      }
+
+      const existing = currentItems.find(i => i.codigo === codigo);
+      if (existing) {
+        if (existing.qty + 1 > prod.stock) {
+          showToast(`Stock máximo disponible: ${prod.stock} unidades.`, "error");
+          return;
+        }
+        existing.qty += 1;
+      } else {
+        currentItems.push({
+          codigo: prod.codigo,
+          nombre: prod.nombre,
+          qty: 1,
+          precioUsd: prod.precioUsd
+        });
+      }
+
+      document.getElementById("product-search-input").value = "";
+      document.getElementById("product-dropdown").classList.add("hidden");
+      renderInvoiceTable();
+      updatePaymentCalculations();
+    }
+
+    function updateItemQty(codigo, newQtyRaw) {
+      const qty = parseInt(newQtyRaw, 10);
+      const item = currentItems.find(i => i.codigo === codigo);
+      const prod = products.find(p => p.codigo === codigo);
+      if (!item || !prod) return;
+
+      if (isNaN(qty) || qty <= 0) {
+        removeItemFromInvoice(codigo);
+        return;
+      }
+      if (qty > prod.stock) {
+        showToast(`Solo hay ${prod.stock} unidades disponibles en stock.`, "error");
+        item.qty = prod.stock;
+      } else {
+        item.qty = qty;
+      }
+      renderInvoiceTable();
+      updatePaymentCalculations();
+    }
+
+    function removeItemFromInvoice(codigo) {
+      currentItems = currentItems.filter(i => i.codigo !== codigo);
+      renderInvoiceTable();
+      updatePaymentCalculations();
+    }
+
+    function renderInvoiceTable() {
+      const tbody = document.getElementById("invoice-items-tbody");
+      let totalUnits = 0;
+      let totalUsd = 0;
+
+      if (currentItems.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-8 text-center text-slate-400 font-medium">
+              No hay productos agregados en esta factura. Busca por código o nombre arriba.
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = currentItems.map(item => {
+          const lineUsd = item.precioUsd * item.qty;
+          const lineBcv = lineUsd * bcvRate;
+          totalUnits += item.qty;
+          totalUsd += lineUsd;
+
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2.5 px-2.5 font-mono font-bold text-samy-navy">${escapeHtml(item.codigo)}</td>
+              <td class="py-2.5 px-2.5 font-bold text-slate-800 uppercase">${escapeHtml(item.nombre)}</td>
+              <td class="py-2.5 px-2 text-center">
+                <input
+                  type="number"
+                  min="1"
+                  value="${item.qty}"
+                  onchange="updateItemQty('${item.codigo}', this.value)"
+                  class="w-16 text-center border border-slate-300 rounded py-1 font-bold text-slate-900 focus:border-samy-navy focus:outline-none"
+                />
+              </td>
+              <td class="py-2.5 px-2.5 text-right font-bold text-slate-700 whitespace-nowrap">Bs. ${formatBs(lineBcv)}</td>
+              <td class="py-2.5 px-2.5 text-right font-industrial font-black text-sm text-emerald-700 whitespace-nowrap">$${lineUsd.toFixed(2)}</td>
+              <td class="py-2.5 px-2 text-center">
+                <button
+                  type="button"
+                  onclick="removeItemFromInvoice('${item.codigo}')"
+                  title="Quitar producto"
+                  class="bg-red-100 hover:bg-red-600 text-red-700 hover:text-white font-bold w-7 h-7 rounded transition cursor-pointer"
+                >
+                  ✕
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      const totalBs = totalUsd * bcvRate;
+      document.getElementById("summary-items-count").textContent = `${totalUnits} unid.`;
+      document.getElementById("summary-total-usd").textContent = `$${totalUsd.toFixed(2)}`;
+      document.getElementById("summary-total-bs").textContent = `Bs. ${formatBs(totalBs)}`;
+    }
+
+    // ==========================================
+    // PAGOS Y EMISIÓN DE FACTURA
+    // ==========================================
+    function isDollarMethod(methodName) {
+      return methodName.includes("($)") || methodName.includes("Zelle") || methodName.includes("USDT");
+    }
+
+    function toggleMixedPayment() {
+      const isMixed = document.getElementById("mixed-payment-toggle").checked;
+      document.getElementById("mixed-payment-box").classList.toggle("hidden", !isMixed);
+      if (!isMixed) {
+        document.getElementById("payment-amount-2").value = "";
+        document.getElementById("payment-ref-2").value = "";
+      }
+      updatePaymentCalculations();
+    }
+
+    function getInvoiceTotalUsd() {
+      return currentItems.reduce((acc, i) => acc + (i.precioUsd * i.qty), 0);
+    }
+
+    function updatePaymentCalculations() {
+      const totalUsd = getInvoiceTotalUsd();
+      const m1 = document.getElementById("payment-method-1").value;
+      const amt1 = parseFloat(document.getElementById("payment-amount-1").value) || 0;
+
+      document.getElementById("payment-amount-1-label").textContent = isDollarMethod(m1) ? "Monto en USD ($)" : "Monto en Bolívares (Bs.)";
+      const paid1Usd = isDollarMethod(m1) ? amt1 : (amt1 / bcvRate);
+
+      let paid2Usd = 0;
+      if (document.getElementById("mixed-payment-toggle").checked) {
+        const m2 = document.getElementById("payment-method-2").value;
+        const amt2 = parseFloat(document.getElementById("payment-amount-2").value) || 0;
+        document.getElementById("payment-amount-2-label").textContent = isDollarMethod(m2) ? "Complemento USD ($)" : "Complemento Bs.";
+        paid2Usd = isDollarMethod(m2) ? amt2 : (amt2 / bcvRate);
+      }
+
+      const totalPaidUsd = paid1Usd + paid2Usd;
+      const diffUsd = totalPaidUsd - totalUsd;
+      const statusEl = document.getElementById("payment-balance-status");
+
+      if (totalUsd === 0) {
+        statusEl.textContent = "Agrega productos para calcular";
+        statusEl.className = "text-slate-500";
+      } else if (Math.abs(diffUsd) < 0.02) {
+        statusEl.textContent = "✔ Pago Exacto Cubierto";
+        statusEl.className = "text-emerald-700";
+      } else if (diffUsd > 0) {
+        statusEl.textContent = `Vuelto: $${diffUsd.toFixed(2)} (Bs. ${formatBs(diffUsd * bcvRate)})`;
+        statusEl.className = "text-samy-navy";
+      } else {
+        const missingUsd = Math.abs(diffUsd);
+        statusEl.textContent = `Falta: $${missingUsd.toFixed(2)} (Bs. ${formatBs(missingUsd * bcvRate)})`;
+        statusEl.className = "text-amber-700";
+      }
+    }
+
+    function emitInvoice() {
+      if (!selectedClient) {
+        showToast("Debes seleccionar o registrar un cliente antes de facturar.", "error");
+        document.getElementById("client-search-input").focus();
+        return;
+      }
+      if (currentItems.length === 0) {
+        showToast("Agrega al menos un producto a la factura.", "error");
+        document.getElementById("product-search-input").focus();
+        return;
+      }
+
+      const totalUsd = Number(getInvoiceTotalUsd().toFixed(2));
+      const totalBs = Number((totalUsd * bcvRate).toFixed(2));
+
+      const m1 = document.getElementById("payment-method-1").value;
+      const amt1Input = parseFloat(document.getElementById("payment-amount-1").value);
+      const defaultAmt1 = isDollarMethod(m1) ? totalUsd : totalBs;
+      const finalAmt1 = !isNaN(amt1Input) && amt1Input > 0 ? amt1Input : defaultAmt1;
+      const ref1 = document.getElementById("payment-ref-1").value.trim();
+
+      const payments = [{ method: m1, amount: finalAmt1, ref: ref1 }];
+
+      if (document.getElementById("mixed-payment-toggle").checked) {
+        const m2 = document.getElementById("payment-method-2").value;
+        const amt2 = parseFloat(document.getElementById("payment-amount-2").value) || 0;
+        const ref2 = document.getElementById("payment-ref-2").value.trim();
+        if (amt2 > 0) {
+          payments.push({ method: m2, amount: amt2, ref: ref2 });
+        }
+      }
+
+      currentItems.forEach(item => {
+        const prod = products.find(p => p.codigo === item.codigo);
+        if (prod) prod.stock = Math.max(0, prod.stock - item.qty);
+      });
+      saveProductsState();
+
+      const invoiceNumber = "#" + String(invoices.length + 1).padStart(6, "0");
+      const newInvoice = {
+        id: "INV-" + Date.now(),
+        number: invoiceNumber,
+        date: new Date().toLocaleString("es-VE"),
+        client: { ...selectedClient },
+        items: currentItems.map(i => ({
+          ...i,
+          precioBcvUnit: Number((i.precioUsd * bcvRate).toFixed(2))
+        })),
+        bcvRate,
+        totalUsd,
+        totalBs,
+        payments,
+        status: "EMITIDA",
+        reversalReason: ""
+      };
+
+      invoices.unshift(newInvoice);
+      localStorage.setItem(KEYS.INVOICES, JSON.stringify(invoices));
+
+      showReceiptModal(newInvoice);
+      resetCurrentInvoice(false);
+      updateGlobalUI();
+      showToast(`¡${getInvoiceFileName(newInvoice)} emitida y guardada en la base de datos!`);
+    }
+
+    function resetCurrentInvoice(notify = true) {
+      currentItems = [];
+      clearSelectedClient();
+      document.getElementById("payment-amount-1").value = "";
+      document.getElementById("payment-ref-1").value = "";
+      document.getElementById("mixed-payment-toggle").checked = false;
+      toggleMixedPayment();
+      renderInvoiceTable();
+      updatePaymentCalculations();
+      if (notify) showToast("Formulario de facturación reiniciado.");
+    }
+
+    function showReceiptModal(inv) {
+      activeReceiptInvoice = inv;
+      const docName = getInvoiceFileName(inv);
+      const area = document.getElementById("print-ticket-area");
+      const modalTitle = document.getElementById("receipt-modal-title");
+      const isAnnulled = inv.status === "REVERSADA";
+
+      if (modalTitle) {
+        modalTitle.textContent = docName;
+      }
+
+      area.innerHTML = `
+        <div class="text-center border-b-2 border-dashed border-slate-300 pb-3">
+          <div class="font-industrial font-black text-xl uppercase text-samy-deep">HIERRO SAMMY, C.A</div>
+          <div class="text-[11px] font-bold text-slate-600">RIF: J-50055307-2 • Valencia, Edo. Carabobo</div>
+          <div class="mt-2 inline-block px-3 py-1 rounded font-mono font-bold text-sm ${isAnnulled ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-900'}">
+            ${escapeHtml(docName.toUpperCase())} ${isAnnulled ? '(REVERSADA / ANULADA)' : ''}
+          </div>
+          <div class="text-[11px] text-slate-500 mt-1">Fecha: ${inv.date} | Tasa BCV: ${formatBs(inv.bcvRate)} Bs.</div>
+        </div>
+
+        <div class="bg-slate-50 p-3 rounded border border-slate-200 space-y-1">
+          <div><strong>Cliente:</strong> ${escapeHtml(inv.client.name)}</div>
+          <div><strong>Cédula / RIF:</strong> ${escapeHtml(inv.client.doc)} | <strong>Tel:</strong> ${escapeHtml(inv.client.phone)}</div>
+          <div><strong>Dirección:</strong> ${escapeHtml(inv.client.address)}</div>
+        </div>
+
+        <table class="w-full text-left border-collapse text-[11px]">
+          <thead>
+            <tr class="border-b border-slate-300 text-slate-600 uppercase">
+              <th class="py-1.5">Cant.</th>
+              <th class="py-1.5">Descripción</th>
+              <th class="py-1.5 text-right">Bs.</th>
+              <th class="py-1.5 text-right">USD</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            ${inv.items.map(i => `
+              <tr>
+                <td class="py-1.5 font-bold">${i.qty}</td>
+                <td class="py-1.5">[${escapeHtml(i.codigo)}] ${escapeHtml(i.nombre)}</td>
+                <td class="py-1.5 text-right">${formatBs(i.precioBcvUnit * i.qty)}</td>
+                <td class="py-1.5 text-right font-bold">$${(i.precioUsd * i.qty).toFixed(2)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+
+        <div class="border-t-2 border-dashed border-slate-300 pt-3 space-y-1 text-right">
+          <div class="text-sm font-extrabold">TOTAL BOLÍVARES (BCV): Bs. ${formatBs(inv.totalBs)}</div>
+          <div class="text-lg font-industrial font-black text-samy-deep">TOTAL DIVISAS: $${inv.totalUsd.toFixed(2)}</div>
+        </div>
+
+        <div class="bg-slate-50 p-2.5 rounded border border-slate-200 text-[11px]">
+          <div class="font-bold uppercase text-slate-600 mb-1">Forma(s) de Pago:</div>
+          ${inv.payments.map(p => `
+            <div>• ${escapeHtml(p.method)}: <strong>${p.amount.toLocaleString("es-VE", { minimumFractionDigits: 2 })}</strong> ${p.ref ? `(Ref: ${escapeHtml(p.ref)})` : ''}</div>
+          `).join("")}
+        </div>
+
+        ${isAnnulled ? `<div class="bg-red-50 border border-red-300 text-red-700 p-2.5 rounded font-bold">Motivo de reverso: ${escapeHtml(inv.reversalReason)}</div>` : ''}
+      `;
+
+      document.getElementById("receipt-modal").classList.remove("hidden");
+    }
+
+    function printInvoiceReceipt() {
+      const targetName = activeReceiptInvoice ? getInvoiceFileName(activeReceiptInvoice) : BASE_TITLE;
+      document.title = targetName;
+      window.print();
+      setTimeout(() => {
+        document.title = BASE_TITLE;
+      }, 500);
+    }
+
+    function closeReceiptModal() {
+      activeReceiptInvoice = null;
+      document.title = BASE_TITLE;
+      document.getElementById("receipt-modal").classList.add("hidden");
+    }
+
+    // ==========================================
+    // MÓDULO CON CLAVE: REVERSOS
+    // ==========================================
+    function getSupervisorPin() {
+      return localStorage.getItem(KEYS.PIN) || "1234";
+    }
+
+    function openReversalAuthModal() {
+      if (isReversalUnlocked) {
+        switchTab("reversals");
+        return;
+      }
+      document.getElementById("reversal-pin-input").value = "";
+      document.getElementById("reversal-auth-modal").classList.remove("hidden");
+      setTimeout(() => document.getElementById("reversal-pin-input").focus(), 100);
+    }
+
+    function closeReversalAuthModal() {
+      document.getElementById("reversal-auth-modal").classList.add("hidden");
+    }
+
+    function verifyReversalPin(event) {
+      event.preventDefault();
+      if (document.getElementById("reversal-pin-input").value === getSupervisorPin()) {
+        isReversalUnlocked = true;
+        closeReversalAuthModal();
+        switchTab("reversals");
+        showToast("Acceso concedido al módulo de devoluciones.");
+      } else {
+        showToast("Clave incorrecta. Intenta nuevamente.", "error");
+        document.getElementById("reversal-pin-input").value = "";
+        document.getElementById("reversal-pin-input").focus();
+      }
+    }
+
+    function lockReversalModule() {
+      isReversalUnlocked = false;
+      switchTab("billing");
+      showToast("Módulo de devoluciones bloqueado.");
+    }
+
+    function openChangePinModal() {
+      document.getElementById("new-pin-input").value = "";
+      document.getElementById("change-pin-modal").classList.remove("hidden");
+    }
+
+    function closeChangePinModal() {
+      document.getElementById("change-pin-modal").classList.add("hidden");
+    }
+
+    function saveNewPin(event) {
+      event.preventDefault();
+      const nextPin = document.getElementById("new-pin-input").value.trim();
+      if (nextPin.length < 4) return;
+      localStorage.setItem(KEYS.PIN, nextPin);
+      closeChangePinModal();
+      showToast("Clave de supervisor actualizada correctamente.");
+    }
+
+    function renderInvoiceHistory() {
+      const query = (document.getElementById("invoice-history-search").value || "").trim().toLowerCase();
+      const tbody = document.getElementById("invoices-history-tbody");
+
+      const filtered = invoices.filter(inv =>
+        inv.number.toLowerCase().includes(query) ||
+        inv.client.doc.toLowerCase().includes(query) ||
+        inv.client.name.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">No hay facturas registradas que coincidan con la búsqueda.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(inv => {
+        const isReversed = inv.status === "REVERSADA";
+        return `
+          <tr class="${isReversed ? 'bg-red-50/60' : 'hover:bg-slate-50'}">
+            <td class="py-2.5 px-3 font-mono font-bold text-samy-navy">${inv.number}</td>
+            <td class="py-2.5 px-3 text-slate-600">${inv.date}</td>
+            <td class="py-2.5 px-3">
+              <div class="font-bold uppercase text-slate-900">${escapeHtml(inv.client.name)}</div>
+              <div class="text-[11px] text-slate-500">${escapeHtml(inv.client.doc)}</div>
+            </td>
+            <td class="py-2.5 px-3 text-right font-industrial font-black text-sm">$${inv.totalUsd.toFixed(2)}</td>
+            <td class="py-2.5 px-3 text-right font-bold text-slate-700">Bs. ${formatBs(inv.totalBs)}</td>
+            <td class="py-2.5 px-3 text-center">
+              <span class="px-2 py-0.5 rounded font-bold text-[10px] uppercase ${isReversed ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'}">
+                ${inv.status}
+              </span>
+            </td>
+            <td class="py-2.5 px-3 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="viewInvoiceById('${inv.id}')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-2.5 py-1 rounded text-[11px] cursor-pointer">
+                  Ver / PDF
+                </button>
+                ${isReversed ? '' : `
+                  <button onclick="promptReversal('${inv.id}')" class="bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1 rounded text-[11px] cursor-pointer">
+                    Reversar
+                  </button>
+                `}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function viewInvoiceById(id) {
+      const inv = invoices.find(i => i.id === id);
+      if (inv) showReceiptModal(inv);
+    }
+
+    function promptReversal(id) {
+      const inv = invoices.find(i => i.id === id);
+      if (!inv || inv.status === "REVERSADA") return;
+
+      document.getElementById("reversal-target-id").value = inv.id;
+      document.getElementById("reversal-target-summary").textContent =
+        `¿Confirmas reversar la factura ${inv.number} del cliente ${inv.client.name} por $${inv.totalUsd.toFixed(2)}? Los productos volverán al stock.`;
+      document.getElementById("reversal-reason-input").value = "";
+      document.getElementById("confirm-reversal-modal").classList.remove("hidden");
+    }
+
+    function closeConfirmReversalModal() {
+      document.getElementById("confirm-reversal-modal").classList.add("hidden");
+    }
+
+    function executeInvoiceReversal(event) {
+      event.preventDefault();
+      const id = document.getElementById("reversal-target-id").value;
+      const reason = document.getElementById("reversal-reason-input").value.trim();
+      const inv = invoices.find(i => i.id === id);
+      if (!inv || inv.status === "REVERSADA") return;
+
+      inv.items.forEach(item => {
+        const prod = products.find(p => p.codigo === item.codigo);
+        if (prod) prod.stock += item.qty;
+      });
+      saveProductsState();
+
+      inv.status = "REVERSADA";
+      inv.reversalReason = reason;
+      inv.reversedAt = new Date().toLocaleString("es-VE");
+
+      localStorage.setItem(KEYS.INVOICES, JSON.stringify(invoices));
+      closeConfirmReversalModal();
+      renderInvoiceHistory();
+      renderInvoicesDatabase();
+      updateGlobalUI();
+      showToast(`Factura ${inv.number} reversada y stock reintegrado.`);
+    }
+
+    function openRateModal() {
+      document.getElementById("manual-rate-input").value = bcvRate;
+      document.getElementById("rate-modal").classList.remove("hidden");
+    }
+
+    function closeRateModal() {
+      document.getElementById("rate-modal").classList.add("hidden");
+    }
+
+    function saveManualRate(event) {
+      event.preventDefault();
+      const val = parseFloat(document.getElementById("manual-rate-input").value);
+      if (val > 0) {
+        bcvRate = Number(val.toFixed(4));
+        localStorage.setItem(KEYS.CONFIG, JSON.stringify({ bcvRate }));
+        updateGlobalUI();
+        updatePaymentCalculations();
+        closeRateModal();
+        showToast(`Tasa BCV actualizada a ${formatBs(bcvRate)} Bs.`);
+      }
+    }
+
+    function formatBs(num) {
+      return Number(num || 0).toLocaleString("es-VE", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function showToast(message, type = "success") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `pointer-events-auto border-l-4 ${type === "error" ? "bg-red-600 text-white border-red-200" : "bg-samy-dark text-white border-samy-silver"} px-4 py-3 rounded shadow-2xl text-xs sm:text-sm font-semibold flex items-center gap-2 max-w-sm`;
+      toast.innerHTML = `<span>${type === "error" ? "⚠" : "✔"}</span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#client-search-input") && !e.target.closest("#client-dropdown")) {
+        document.getElementById("client-dropdown").classList.add("hidden");
+      }
+      if (!e.target.closest("#product-search-input") && !e.target.closest("#product-dropdown")) {
+        document.getElementById("product-dropdown").classList.add("hidden");
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", initBillingSystem);
+  </script>
+</body>
+</html>
