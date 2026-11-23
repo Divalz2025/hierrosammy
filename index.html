@@ -20,14 +20,14 @@
           },
           colors: {
             samy: {
-              navy: '#153A6E',
-              royal: '#1E4E8C',
-              deep: '#0B1D36',
-              dark: '#0F2544',
-              steel: '#1E3557',
-              silver: '#CBD5E1',
-              chrome: '#94A3B8',
-              accent: '#38BDF8',
+              navy: '#153A6E',      /* Azul marino principal del logo */
+              royal: '#1E4E8C',     /* Azul industrial medio para hovers */
+              deep: '#0B1D36',      /* Azul oscuro profundo para fondos/headers */
+              dark: '#0F2544',      /* Azul pizarra oscuro */
+              steel: '#1E3557',     /* Azul acero para tarjetas oscuras */
+              silver: '#CBD5E1',    /* Plateado claro metálico */
+              chrome: '#94A3B8',    /* Gris acero cromado */
+              accent: '#38BDF8',    /* Azul celeste metálico para acentos */
               light: '#F1F5F9',
             }
           }
@@ -46,6 +46,7 @@
       font-family: 'Barlow', sans-serif;
       letter-spacing: -0.01em;
     }
+    /* Franja industrial metálica azul y plata */
     .samy-metal-stripe {
       background: repeating-linear-gradient(
         -45deg,
@@ -55,12 +56,14 @@
         #CBD5E1 28px
       );
     }
+    /* Degradado acero y azul marino para el Hero */
     .samy-hero-bg {
       background-color: #0B1D36;
       background-image: 
         radial-gradient(circle at 85% 20%, rgba(148, 163, 184, 0.22) 0%, transparent 48%),
         linear-gradient(135deg, #09172B 0%, #153A6E 65%, #1E293B 100%);
     }
+    /* Contenedor con brillo sutil para resaltar el logo sobre fondos oscuros */
     .logo-glow-wrapper {
       background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(226,232,240,0.92));
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,1);
@@ -99,7 +102,6 @@
           <span class="text-slate-200 font-medium">Tasa BCV:</span>
           <strong class="text-samy-silver font-industrial text-sm sm:text-base" id="display-bcv-rate">Cargando...</strong>
         </span>
-        <span id="bcv-source-label" class="hidden sm:inline text-xs text-slate-400">Fuente: Programa Facturacion.html</span>
         <span class="hidden lg:inline text-slate-500">|</span>
         <span class="hidden lg:inline text-slate-300">Catálogo Digital Ferretero & Estructuras Metálicas</span>
       </div>
@@ -125,6 +127,7 @@
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
       <div class="flex items-center justify-between w-full md:w-auto">
         <a href="#" onclick="resetFilters(); return false;" class="flex items-center gap-3.5 group">
+          <!-- LOGO OFICIAL EN EL TÍTULO -->
           <div class="logo-glow-wrapper px-2.5 py-1.5 rounded-lg border border-slate-300 flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
             <img 
               src="https://i.ibb.co/9kJ1CHYC/logo-transparete.png" 
@@ -207,7 +210,7 @@
         <div class="bg-samy-steel/90 border-l-4 border-samy-silver p-4 rounded-r shadow-lg backdrop-blur-xs">
           <div class="text-slate-300 text-xs font-semibold uppercase">Productos Activos</div>
           <div id="stat-total-products" class="font-industrial font-black text-2xl sm:text-3xl text-white mt-0.5">0</div>
-          <div class="text-[11px] text-samy-silver mt-0.5">Cargados desde Catalogof.csv</div>
+          <div class="text-[11px] text-samy-silver mt-0.5">Cargados desde CSV</div>
         </div>
         <div class="bg-samy-steel/90 border-l-4 border-emerald-400 p-4 rounded-r shadow-lg backdrop-blur-xs">
           <div class="text-slate-300 text-xs font-semibold uppercase">En Stock</div>
@@ -235,7 +238,7 @@
 
     <div id="empty-state" class="hidden bg-white rounded-xl border-2 border-dashed border-slate-300 p-12 text-center my-6">
       <h3 class="font-industrial font-extrabold text-xl uppercase text-samy-deep mb-1">No se encontraron productos</h3>
-      <p class="text-sm text-slate-500 mb-4">Verifica que los archivos <strong>Catalogof.csv</strong> y <strong>Programa Facturacion.html</strong> estén en el mismo directorio y se abran mediante un servidor web.</p>
+      <p class="text-sm text-slate-500 mb-4">Verifica que el archivo <strong>Catalogof.csv</strong> esté en el mismo directorio y se abra mediante un servidor web (no con doble clic desde archivo local).</p>
     </div>
   </main>
 
@@ -325,6 +328,7 @@
     <div id="cart-items-container" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
 
     <div class="bg-white border-t-2 border-slate-200 p-4 space-y-2.5 shadow-inner">
+      <!-- CAMPOS OBLIGATORIOS DEL CLIENTE -->
       <div class="space-y-2">
         <div>
           <input 
@@ -361,11 +365,13 @@
         </div>
       </div>
 
+      <!-- MENSAJE DE ADVERTENCIA SI SE INTENTA ENVIAR SIN COMPLETAR CAMPOS -->
       <div id="whatsapp-validation-alert" class="hidden bg-red-50 border border-red-300 text-red-700 px-3 py-2 rounded text-xs font-semibold flex items-center gap-2">
         <span>⚠️</span>
         <span id="whatsapp-validation-text">Por favor completa Tu Nombre / Empresa y Cédula / RIF para activar el envío.</span>
       </div>
 
+      <!-- BOTÓN WHATSAPP CON ESTADO ACTIVO/DESACTIVADO -->
       <button 
         id="btn-send-whatsapp"
         onclick="sendWhatsAppOrder()" 
@@ -379,6 +385,7 @@
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+  <!-- JAVASCRIPT ROBUSTO PARA CSV Y ACTUALIZACIÓN AUTOMÁTICA BCV -->
   <script>
     let products = [];
     let cart = [];
@@ -386,20 +393,15 @@
     let currencyMode = "BOTH";
     let config = {
       bcvRate: 918.77,
-      whatsappPhone: "584144077442",
-      facturacionFile: "Programa Facturacion.html",
-      catalogFile: "Catalogof.csv",
-      bcvSource: "Respaldo"
+      whatsappPhone: "584144077442"
     };
 
     async function initApp() {
       const savedCart = localStorage.getItem("ferrepro_cart");
-      if (savedCart) {
-        try { cart = JSON.parse(savedCart) || []; } catch (e) { cart = []; }
-      }
+      if (savedCart) { try { cart = JSON.parse(savedCart) || []; } catch (e) { cart = []; } }
 
-      await loadBcvRateFromFacturacion();
       await loadCatalogCsv();
+      await fetchBcvRateAuto();
 
       updateHeaderUI();
       renderCategoryTabs();
@@ -408,111 +410,67 @@
       validateQuoteForm();
     }
 
-    function parseVenezuelanNumber(rawValue) {
-      if (rawValue === null || rawValue === undefined) return NaN;
-      let cleaned = String(rawValue)
-        .replace(/Bs\.?/gi, "")
-        .replace(/\$/g, "")
-        .replace(/\s+/g, "")
-        .trim();
+    async function fetchBcvRateAuto() {
+      const endpoints = [
+        async () => {
+          const res = await fetch(`https://ve.dolarapi.com/v1/dolares/oficial?nocache=${Date.now()}`, { cache: "no-store" });
+          if (!res.ok) throw new Error("Error en dolarapi");
+          const data = await res.json();
+          const val = parseFloat(data?.promedio ?? data?.venta ?? data?.compra ?? 0);
+          return val > 0 ? val : null;
+        },
+        async () => {
+          const res = await fetch(`https://pydolarve.org/api/v1/dollar?page=bcv&nocache=${Date.now()}`, { cache: "no-store" });
+          if (!res.ok) throw new Error("Error en pydolarve");
+          const data = await res.json();
+          const val = parseFloat(data?.monitors?.usd?.price ?? data?.price ?? 0);
+          return val > 0 ? val : null;
+        }
+      ];
 
-      if (!cleaned) return NaN;
-
-      if (cleaned.includes(",") && cleaned.includes(".")) {
-        cleaned = cleaned.replace(/\./g, "").replace(",", ".");
-      } else if (cleaned.includes(",")) {
-        cleaned = cleaned.replace(",", ".");
-      }
-
-      const num = parseFloat(cleaned);
-      return Number.isFinite(num) && num > 0 ? num : NaN;
-    }
-
-    async function loadBcvRateFromFacturacion() {
-      try {
-        const res = await fetch(`${encodeURI(config.facturacionFile)}?v=${Date.now()}`, { cache: "no-store" });
-        if (!res.ok) throw new Error(`No se pudo leer ${config.facturacionFile}`);
-
-        const htmlText = await res.text();
-        const doc = new DOMParser().parseFromString(htmlText, "text/html");
-
-        const selectors = [
-          "#tasa-bcv", "#tasaBcv", "#bcv-rate", "#bcvRate", "#valor-bcv", "#precio-bcv",
-          "[data-bcv-rate]", "[data-tasa-bcv]",
-          "input[id*='bcv' i]", "input[name*='bcv' i]", "input[id*='tasa' i]", "input[name*='tasa' i]",
-          "[id*='bcv' i]", "[id*='tasa-bcv' i]"
-        ];
-
-        for (const sel of selectors) {
-          const el = doc.querySelector(sel);
-          if (!el) continue;
-          const raw = el.getAttribute("data-bcv-rate")
-            || el.getAttribute("data-tasa-bcv")
-            || ("value" in el ? el.value : "")
-            || el.textContent;
-          const parsed = parseVenezuelanNumber(raw);
-          if (!Number.isNaN(parsed)) {
-            config.bcvRate = Number(parsed.toFixed(4));
-            config.bcvSource = "Programa Facturacion.html";
+      for (const getRate of endpoints) {
+        try {
+          const rate = await getRate();
+          if (rate && !Number.isNaN(rate) && rate > 0) {
+            config.bcvRate = Number(rate.toFixed(4));
+            updateHeaderUI();
+            applyFilters();
+            renderCart();
             return;
           }
+        } catch (err) {
+          console.warn("Fuente BCV alternativa no disponible:", err);
         }
-
-        // Búsqueda por texto o variable en scripts dentro de Programa Facturacion.html
-        const scriptMatches = [
-          /(?:bcvRate|tasaBcv|tasa_bcv|tasaBCV)\s*[:=]\s*["']?([\d.,]+)["']?/i.exec(htmlText),
-          /(?:tasa\s*(?:del\s*día\s*)?bcv|bcv)\s*[:\-]?\s*(?:bs\.?\s*)?([\d.,]+)/i.exec(doc.body ? doc.body.innerText : htmlText)
-        ];
-
-        for (const match of scriptMatches) {
-          if (match && match[1]) {
-            const parsed = parseVenezuelanNumber(match[1]);
-            if (!Number.isNaN(parsed)) {
-              config.bcvRate = Number(parsed.toFixed(4));
-              config.bcvSource = "Programa Facturacion.html";
-              return;
-            }
-          }
-        }
-
-        config.bcvSource = "Respaldo (sin campo BCV detectado)";
-      } catch (err) {
-        console.warn("No se pudo obtener la tasa desde Programa Facturacion.html:", err);
-        config.bcvSource = "Respaldo local";
       }
+
+      updateHeaderUI();
+      applyFilters();
+      renderCart();
     }
 
     async function loadCatalogCsv() {
       try {
-        const response = await fetch(`${encodeURI(config.catalogFile)}?v=${Date.now()}`, { cache: "no-store" });
-        if (!response.ok) throw new Error(`No se pudo cargar ${config.catalogFile}`);
+        const response = await fetch(`Catalogof.csv?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error("No se pudo cargar Catalogof.csv");
         const csvText = await response.text();
         parseCsvRobust(csvText);
       } catch (error) {
         console.error(error);
         if (window.location.protocol !== "file:") {
-          showToast("Error al cargar Catalogof.csv. Verifica que esté en el mismo directorio.", "error");
+          showToast("Error al cargar Catalogof.csv. Verifica que esté en la raíz de GitHub.", "error");
         }
       }
     }
 
-    function detectCsvDelimiter(sampleText) {
-      const firstLine = sampleText.split(/\r?\n/)[0] || "";
-      const semiCount = (firstLine.match(/;/g) || []).length;
-      const commaCount = (firstLine.match(/,/g) || []).length;
-      return semiCount >= commaCount ? ";" : ",";
-    }
-
     function parseCsvRobust(text) {
-      const delimiter = detectCsvDelimiter(text);
       let rows = [];
       let currentRow = [];
       let currentField = "";
       let inQuotes = false;
 
       for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const nextChar = text[i + 1];
+        let char = text[i];
+        let nextChar = text[i + 1];
 
         if (char === '"') {
           if (inQuotes && nextChar === '"') {
@@ -521,7 +479,7 @@
           } else {
             inQuotes = !inQuotes;
           }
-        } else if (char === delimiter && !inQuotes) {
+        } else if (char === ';' && !inQuotes) {
           currentRow.push(currentField.trim());
           currentField = "";
         } else if ((char === '\r' || char === '\n') && !inQuotes) {
@@ -536,7 +494,6 @@
           currentField += char;
         }
       }
-
       if (currentField !== "" || currentRow.length > 0) {
         currentRow.push(currentField.trim());
         rows.push(currentRow);
@@ -547,23 +504,21 @@
       const parsedProducts = [];
       for (let i = 1; i < rows.length; i++) {
         const cols = rows[i];
-        if (!cols[0] && !cols[1]) continue;
+        if (cols.length < 8 || !cols[0]) continue;
 
-        const codigo = cols[0] || `PROD-${i}`;
+        const codigo = cols[0] || "";
         const producto = cols[1] || "";
         const categoria = (cols[2] || "GENERAL").toUpperCase();
         const descripcion = cols[3] || "";
         const stock = parseInt((cols[4] || "0").replace(/[^\d]/g, ""), 10) || 0;
+        
+        let precioDolar = parseFloat((cols[5] || "0").replace(/\$/g, "").replace(/\./g, "").replace(",", ".")) || 0;
+        let precioBcv = parseFloat((cols[6] || "0").replace(/Bs\.?/gi, "").replace(/\./g, "").replace(",", ".")) || 0;
+        const fotoUrl = cols[7] || "";
 
-        let precioDolar = parseVenezuelanNumber(cols[5]);
-        let precioBcv = parseVenezuelanNumber(cols[6]);
-
-        if (Number.isNaN(precioDolar)) precioDolar = 0;
-        if (precioDolar === 0 && !Number.isNaN(precioBcv) && precioBcv > 0 && config.bcvRate > 0) {
+        if (precioDolar === 0 && precioBcv > 0) {
           precioDolar = precioBcv / config.bcvRate;
         }
-
-        const fotoUrl = cols[7] || "";
 
         parsedProducts.push({
           codigo,
@@ -583,16 +538,10 @@
     }
 
     function updateHeaderUI() {
-      document.getElementById("display-bcv-rate").textContent =
-        config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bs.";
-      const sourceLabel = document.getElementById("bcv-source-label");
-      if (sourceLabel) {
-        sourceLabel.textContent = `Fuente: ${config.bcvSource}`;
-      }
+      document.getElementById("display-bcv-rate").textContent = config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bs.";
       document.getElementById("stat-total-products").textContent = products.length;
       document.getElementById("stat-in-stock").textContent = products.filter(p => p.stock > 0).length;
-      document.getElementById("cart-bcv-rate-label").textContent =
-        config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bs./$";
+      document.getElementById("cart-bcv-rate-label").textContent = config.bcvRate.toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bs./$";
     }
 
     function setCurrencyMode(mode) {
@@ -823,6 +772,7 @@
       document.getElementById("cart-total-bs").textContent = "Bs. " + (totalUsd * config.bcvRate).toLocaleString("es-VE", {minimumFractionDigits: 2});
     }
 
+    /* VALIDACIÓN EN TIEMPO REAL DE TU NOMBRE / EMPRESA Y CÉDULA / RIF */
     function validateQuoteForm() {
       const nameInput = document.getElementById("customer-name");
       const idInput = document.getElementById("customer-id");
@@ -865,6 +815,7 @@
       const customerName = nameInput.value.trim();
       const customerId = idInput.value.trim();
 
+      /* SI ESTÁ DESACTIVADO (CAMPOS VACÍOS), MOSTRAR MENSAJE Y RESALTAR CAMPOS */
       if (!customerName || !customerId) {
         let missingFields = [];
         if (!customerName) {
