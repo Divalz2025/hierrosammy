@@ -36,126 +36,221 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- TOP BAR -->
-  <div class="bg-ingco-black text-white border-b border-neutral-800 text-xs sm:text-sm py-2 px-4">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-      <div class="flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span class="font-bold text-ingco-yellow">PANEL DE CONTROL Y BASE DE DATOS</span>
-        <span id="repo-status-badge" class="hidden sm:inline-block text-[11px] bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded font-mono">
-          Divalz2025/hierrosammy (main)
-        </span>
-      </div>
-      <div class="flex items-center gap-3">
-        <span>Tasa de Cambio Actual: <strong id="top-bcv-display" class="text-ingco-yellow">914,02 Bs.</strong></span>
-        <a id="catalog-web-link" href="https://divalz2025.github.io/hierrosammy/" target="_blank" rel="noopener noreferrer" class="bg-ingco-yellow text-black font-bold px-3 py-1 rounded hover:bg-ingco-orange transition text-xs">
-          Ver Catálogo Web ↗
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- HEADER -->
-  <header class="bg-ingco-dark text-white border-b-4 border-ingco-yellow py-6 px-4 shadow-lg">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-      <div>
-        <div class="font-industrial font-black text-3xl uppercase tracking-tight">
-          HIERRO<span class="text-ingco-yellow">SAMMY</span> <span class="text-neutral-400 text-xl">| Base de Datos</span>
+  <!-- PANTALLA DE BLOQUEO POR PIN (4 CIFRAS) -->
+  <div id="pin-lock-screen" class="fixed inset-0 z-[100] bg-ingco-black/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-ingco-dark border-2 border-ingco-yellow rounded-2xl max-w-sm w-full p-6 text-white shadow-2xl space-y-5">
+      <div class="text-center space-y-1">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-ingco-yellow/15 border border-ingco-yellow text-ingco-yellow text-xl font-black mb-1">
+          🔒
         </div>
-        <p class="text-xs text-neutral-400 mt-1">Gestión de inventario CSV (9 columnas), precios BCV y sincronización directa con GitHub.</p>
+        <h2 class="font-industrial font-black text-2xl uppercase tracking-tight">
+          HIERRO<span class="text-ingco-yellow">SAMMY</span>
+        </h2>
+        <p class="text-xs text-neutral-400">Ingresa el PIN de 4 cifras para acceder a la base de datos</p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <button type="button" onclick="openProductModal()" class="bg-ingco-yellow hover:bg-ingco-orange text-ingco-black font-industrial font-black uppercase px-4 py-2.5 rounded text-sm transition shadow flex items-center gap-2 cursor-pointer">
-          <span>+ Nuevo Producto</span>
-        </button>
-        <button type="button" onclick="pushCatalogToGithub()" id="btn-push-github" class="bg-emerald-500 hover:bg-emerald-400 text-black font-industrial font-black uppercase px-4 py-2.5 rounded text-sm transition shadow flex items-center gap-1.5 cursor-pointer">
-          <span>☁ Subir a GitHub</span>
-        </button>
-        <button type="button" onclick="pullCatalogFromGithub()" class="bg-neutral-800 hover:bg-neutral-700 text-sky-300 border border-sky-400/40 font-bold px-3 py-2.5 rounded text-xs transition cursor-pointer" title="Cargar Catalogof.csv desde GitHub">
-          ↻ Leer Repo
-        </button>
-        <button type="button" onclick="openGithubModal()" class="bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-600 font-bold px-3 py-2.5 rounded text-xs transition cursor-pointer" title="Configurar repositorio y token">
-          ⚙ Repo / Token
-        </button>
-        <button type="button" onclick="exportCsv()" class="bg-neutral-800 hover:bg-neutral-700 text-ingco-yellow border border-ingco-yellow/40 font-bold px-3 py-2.5 rounded text-xs transition cursor-pointer">
-          ↓ Exportar CSV
-        </button>
-        <button type="button" onclick="document.getElementById('csv-file').click()" class="bg-neutral-800 hover:bg-neutral-700 text-white font-bold px-3 py-2.5 rounded text-xs transition cursor-pointer">
-          ↑ Importar CSV
-        </button>
-        <input type="file" id="csv-file" accept=".csv,text/csv" onchange="importCsv(event)" class="hidden" />
-      </div>
-    </div>
-  </header>
-
-  <!-- NOTIFICACIÓN TOAST -->
-  <div id="toast-notification" class="fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300 max-w-md">
-    <div id="toast-box" class="bg-ingco-black text-white border-l-4 border-ingco-yellow px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 text-xs font-semibold">
-      <span id="toast-icon" class="text-ingco-yellow text-base font-bold shrink-0">✓</span>
-      <span id="toast-message">Operación completada</span>
-    </div>
-  </div>
-
-  <!-- MAIN CONTENT -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs border-l-4 border-ingco-yellow">
-        <div class="text-xs text-neutral-500 font-bold uppercase">Total Productos en BD</div>
-        <div id="stat-total" class="font-industrial font-black text-3xl text-ingco-black mt-1">0</div>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs border-l-4 border-emerald-500">
-        <div class="text-xs text-neutral-500 font-bold uppercase">Con Stock Activo</div>
-        <div id="stat-stock" class="font-industrial font-black text-3xl text-emerald-600 mt-1">0</div>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs border-l-4 border-ingco-orange flex items-center justify-between gap-2">
+      <form onsubmit="verifyPinLogin(event)" class="space-y-4">
         <div>
-          <div class="text-xs text-neutral-500 font-bold uppercase">Tasa de Cambio (BCV)</div>
-          <div id="stat-bcv" class="font-industrial font-extrabold text-2xl text-ingco-black mt-1">914,02 Bs.</div>
-        </div>
-        <button type="button" onclick="openRateModal()" class="bg-ingco-yellow hover:bg-ingco-orange text-black text-xs font-extrabold uppercase px-3 py-2.5 rounded-lg transition shadow-xs cursor-pointer">
-          Cambiar Tasa
-        </button>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
-      <div class="p-4 bg-neutral-50 border-b border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div class="w-full sm:w-96">
           <input
-            type="text"
-            id="search-box"
-            oninput="renderTable()"
-            placeholder="Buscar por código SKU, nombre, categoría o descripción..."
-            class="w-full bg-white border border-neutral-300 rounded-lg px-3 py-2 text-xs font-medium focus:outline-none focus:border-ingco-yellow"
+            type="password"
+            id="login-pin-input"
+            inputmode="numeric"
+            pattern="[0-9]{4}"
+            maxlength="4"
+            required
+            autocomplete="off"
+            placeholder="••••"
+            class="w-full bg-ingco-black border-2 border-neutral-700 focus:border-ingco-yellow rounded-xl py-3 px-4 text-center font-mono font-black text-3xl tracking-[0.6em] text-ingco-yellow focus:outline-none"
           />
+          <p id="pin-error-msg" class="text-red-400 text-xs font-semibold text-center mt-2 hidden">
+            PIN incorrecto. Inténtalo de nuevo.
+          </p>
         </div>
-        <div class="text-xs text-neutral-500 font-semibold" id="table-counter">
-          Mostrando registros
+
+        <button type="submit" class="w-full bg-ingco-yellow hover:bg-ingco-orange text-ingco-black font-industrial font-black uppercase py-3 rounded-xl text-sm transition shadow-lg cursor-pointer">
+          Desbloquear Panel
+        </button>
+      </form>
+
+      <div class="text-center text-[11px] text-neutral-500 border-t border-neutral-800 pt-3">
+        PIN inicial por defecto: <span class="font-mono text-neutral-300 font-bold">1234</span> (puedes cambiarlo dentro del panel)
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR PRINCIPAL PROTEGIDO -->
+  <div id="app-protected-wrapper" class="min-h-screen flex flex-col hidden">
+
+    <!-- TOP BAR -->
+    <div class="bg-ingco-black text-white border-b border-neutral-800 text-xs py-2 px-3 sm:px-5">
+      <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <span id="connection-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-bold text-ingco-yellow">PANEL DE CONTROL Y BASE DE DATOS</span>
+          <span id="repo-status-badge" class="hidden sm:inline-block text-[11px] bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded font-mono">
+            Divalz2025/hierrosammy (Catalogof.csv)
+          </span>
+          <span id="backup-status-badge" class="text-[11px] bg-neutral-800 text-emerald-300 px-2 py-0.5 rounded font-mono">
+            Respaldo local listo
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span>Tasa de Cambio Manual: <strong id="top-bcv-display" class="text-ingco-yellow">914,02 Bs.</strong></span>
+          <a id="catalog-web-link" href="https://divalz2025.github.io/hierrosammy/" target="_blank" rel="noopener noreferrer" class="bg-ingco-yellow text-black font-bold px-3 py-1 rounded hover:bg-ingco-orange transition text-xs">
+            Ver Catálogo Web ↗
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="bg-ingco-dark text-white border-b-4 border-ingco-yellow py-4 px-3 sm:px-5 shadow-lg">
+      <div class="max-w-[1600px] mx-auto flex flex-col xl:flex-row items-center justify-between gap-3">
+        <div>
+          <div class="font-industrial font-black text-2xl sm:text-3xl uppercase tracking-tight">
+            HIERRO<span class="text-ingco-yellow">SAMMY</span> <span class="text-neutral-400 text-lg sm:text-xl">| Base de Datos</span>
+          </div>
+          <p class="text-xs text-neutral-400 mt-0.5">Gestión de <strong class="text-neutral-200">Catalogof.csv</strong>, actualización manual de tasa BCV y respaldo local sin internet.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center xl:justify-end gap-1.5">
+          <button type="button" onclick="openProductModal()" class="bg-ingco-yellow hover:bg-ingco-orange text-ingco-black font-industrial font-black uppercase px-3.5 py-2 rounded text-xs sm:text-sm transition shadow flex items-center gap-1.5 cursor-pointer">
+            <span>+ Nuevo Producto</span>
+          </button>
+          <button type="button" onclick="pushCatalogToGithub()" id="btn-push-github" class="bg-emerald-500 hover:bg-emerald-400 text-black font-industrial font-black uppercase px-3.5 py-2 rounded text-xs sm:text-sm transition shadow flex items-center gap-1.5 cursor-pointer">
+            <span>☁ Guardar en GitHub</span>
+          </button>
+          <button type="button" onclick="pullCatalogFromGithub(false)" class="bg-neutral-800 hover:bg-neutral-700 text-sky-300 border border-sky-400/40 font-bold px-2.5 py-2 rounded text-xs transition cursor-pointer" title="Descargar Catalogof.csv desde GitHub">
+            ↻ Leer Catalogof.csv
+          </button>
+          <button type="button" onclick="saveLocalBackup(true)" class="bg-neutral-800 hover:bg-neutral-700 text-emerald-300 border border-emerald-400/40 font-bold px-2.5 py-2 rounded text-xs transition cursor-pointer" title="Guardar copia local para uso sin internet">
+            💾 Respaldo Local
+          </button>
+          <button type="button" onclick="exportCsv()" class="bg-neutral-800 hover:bg-neutral-700 text-ingco-yellow border border-ingco-yellow/40 font-bold px-2.5 py-2 rounded text-xs transition cursor-pointer">
+            ↓ Descargar CSV
+          </button>
+          <button type="button" onclick="document.getElementById('csv-file').click()" class="bg-neutral-800 hover:bg-neutral-700 text-white font-bold px-2.5 py-2 rounded text-xs transition cursor-pointer">
+            ↑ Cargar CSV
+          </button>
+          <button type="button" onclick="openGithubModal()" class="bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-600 font-bold px-2.5 py-2 rounded text-xs transition cursor-pointer" title="Configurar repositorio y token">
+            ⚙ Repo / Token
+          </button>
+          <button type="button" onclick="openPinSettingsModal()" class="bg-neutral-800 hover:bg-neutral-700 text-amber-300 border border-amber-400/40 font-bold px-2.5 py-2 rounded text-xs transition cursor-pointer" title="Cambiar PIN de acceso">
+            🔒 PIN
+          </button>
+          <input type="file" id="csv-file" accept=".csv,text/csv" onchange="importCsv(event)" class="hidden" />
+        </div>
+      </div>
+    </header>
+
+    <!-- NOTIFICACIÓN TOAST -->
+    <div id="toast-notification" class="fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300 max-w-md">
+      <div id="toast-box" class="bg-ingco-black text-white border-l-4 border-ingco-yellow px-4 py-3 rounded-lg shadow-2xl flex items-center gap-3 text-xs font-semibold">
+        <span id="toast-icon" class="text-ingco-yellow text-base font-bold shrink-0">✓</span>
+        <span id="toast-message">Operación completada</span>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-5 py-4 space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div class="bg-white p-3.5 rounded-xl border border-neutral-200 shadow-xs border-l-4 border-ingco-yellow">
+          <div class="text-[11px] text-neutral-500 font-bold uppercase">Total Productos en Catalogof.csv</div>
+          <div id="stat-total" class="font-industrial font-black text-2xl sm:text-3xl text-ingco-black mt-0.5">0</div>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-neutral-200 shadow-xs border-l-4 border-emerald-500">
+          <div class="text-[11px] text-neutral-500 font-bold uppercase">Con Stock Activo</div>
+          <div id="stat-stock" class="font-industrial font-black text-2xl sm:text-3xl text-emerald-600 mt-0.5">0</div>
+        </div>
+        <div class="bg-white p-3.5 rounded-xl border border-neutral-200 shadow-xs border-l-4 border-ingco-orange flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div class="text-[11px] text-neutral-500 font-bold uppercase">Tasa de Cambio (Manual)</div>
+            <div id="stat-bcv" class="font-industrial font-extrabold text-xl sm:text-2xl text-ingco-black mt-0.5">914,02 Bs.</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a
+              href="https://www.bcv.org.ve/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="bg-ingco-black hover:bg-neutral-800 text-ingco-yellow border border-ingco-yellow text-xs font-extrabold uppercase px-3 py-2 rounded-lg transition shadow-xs cursor-pointer inline-flex items-center gap-1"
+            >
+              <span>Consultar Tasa</span>
+              <span>↗</span>
+            </a>
+            <button type="button" onclick="openRateModal()" class="bg-ingco-yellow hover:bg-ingco-orange text-black text-xs font-extrabold uppercase px-3 py-2 rounded-lg transition shadow-xs cursor-pointer">
+              Cambiar Tasa
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-ingco-black text-white font-industrial text-[11px] uppercase tracking-wider">
-              <th class="p-3 whitespace-nowrap">1. Código SKU</th>
-              <th class="p-3 whitespace-nowrap">2. Nombre del Producto</th>
-              <th class="p-3 whitespace-nowrap">3. Categoría</th>
-              <th class="p-3 min-w-[200px]">4. Descripción</th>
-              <th class="p-3 text-center whitespace-nowrap">5. Stock</th>
-              <th class="p-3 text-right whitespace-nowrap">6. Precio Dólar</th>
-              <th class="p-3 text-right whitespace-nowrap">7. Precio BCV</th>
-              <th class="p-3 text-center whitespace-nowrap">8. Foto</th>
-              <th class="p-3 text-right whitespace-nowrap">9. Tasa de Cambio</th>
-              <th class="p-3 text-center whitespace-nowrap">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="products-table-body" class="divide-y divide-neutral-200 text-xs"></tbody>
-        </table>
+      <div class="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+        <div class="p-3 bg-neutral-50 border-b border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div class="w-full sm:w-96">
+            <input
+              type="text"
+              id="search-box"
+              oninput="renderTable()"
+              placeholder="Buscar por código SKU, nombre, categoría o descripción..."
+              class="w-full bg-white border border-neutral-300 rounded-lg px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-ingco-yellow"
+            />
+          </div>
+          <div class="flex items-center gap-3 text-xs text-neutral-500 font-semibold">
+            <span id="last-backup-label">Respaldo: --</span>
+            <span>|</span>
+            <span id="table-counter">Mostrando registros</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left border-collapse table-auto">
+            <thead>
+              <tr class="bg-ingco-black text-white font-industrial text-[10px] xl:text-[11px] uppercase tracking-wider">
+                <th class="px-2.5 py-2.5 whitespace-nowrap">1. Código SKU</th>
+                <th class="px-2.5 py-2.5">2. Nombre del Producto</th>
+                <th class="px-2.5 py-2.5">3. Categoría</th>
+                <th class="px-2.5 py-2.5">4. Descripción</th>
+                <th class="px-2 py-2.5 text-center whitespace-nowrap">5. Stock</th>
+                <th class="px-2 py-2.5 text-right whitespace-nowrap">6. Precio $</th>
+                <th class="px-2 py-2.5 text-right whitespace-nowrap">7. Precio BCV</th>
+                <th class="px-2 py-2.5 text-center whitespace-nowrap">8. Foto</th>
+                <th class="px-2 py-2.5 text-right whitespace-nowrap">9. Tasa</th>
+                <th class="px-2.5 py-2.5 text-center whitespace-nowrap sticky right-0 bg-ingco-black shadow-[-4px_0_8px_rgba(0,0,0,0.25)]">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="products-table-body" class="divide-y divide-neutral-200 text-xs"></tbody>
+          </table>
+        </div>
       </div>
+    </main>
+  </div>
+
+  <!-- MODAL: CAMBIAR PIN DE SEGURIDAD -->
+  <div id="pin-settings-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-sm w-full overflow-hidden shadow-2xl border-2 border-ingco-yellow">
+      <div class="bg-ingco-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-ingco-yellow">
+        <h3 class="font-industrial font-extrabold text-lg uppercase">Cambiar PIN de Acceso</h3>
+        <button type="button" onclick="closePinSettingsModal()" class="text-neutral-400 hover:text-white font-bold text-xl cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="saveNewPinForm(event)" class="p-5 space-y-3.5 text-xs">
+        <p class="text-neutral-600 leading-relaxed">
+          Establece una clave numérica de exactamente <strong>4 cifras</strong> para proteger el acceso al panel.
+        </p>
+        <div>
+          <label class="block font-bold uppercase text-neutral-700 mb-1">Nuevo PIN (4 dígitos) *</label>
+          <input type="password" id="new-pin-input" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required placeholder="0000" class="w-full border border-neutral-300 rounded-lg px-3 py-2 text-center font-mono font-black text-xl tracking-[0.5em] focus:border-ingco-yellow focus:outline-none" />
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-neutral-700 mb-1">Confirmar Nuevo PIN *</label>
+          <input type="password" id="confirm-pin-input" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required placeholder="0000" class="w-full border border-neutral-300 rounded-lg px-3 py-2 text-center font-mono font-black text-xl tracking-[0.5em] focus:border-ingco-yellow focus:outline-none" />
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closePinSettingsModal()" class="bg-neutral-200 hover:bg-neutral-300 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-ingco-yellow hover:bg-ingco-orange font-industrial font-extrabold uppercase px-5 py-2 rounded-lg text-black cursor-pointer">Guardar PIN</button>
+        </div>
+      </form>
     </div>
-  </main>
+  </div>
 
   <!-- MODAL: CONFIGURAR GITHUB -->
   <div id="github-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
@@ -166,7 +261,7 @@
       </div>
       <form onsubmit="saveGithubConfigForm(event)" class="p-5 space-y-3.5 text-xs">
         <p class="text-neutral-600 leading-relaxed">
-          Usa un <strong>Fine-grained Personal Access Token</strong> con permiso <strong>Contents: Read and write</strong> solo para el repositorio destino. El token se guarda únicamente en este navegador.
+          Usa un <strong>Fine-grained Personal Access Token</strong> con permiso <strong>Contents: Read and write</strong> para actualizar directamente <strong>Catalogof.csv</strong>.
         </p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -182,7 +277,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold uppercase text-neutral-700 mb-1">Ruta del CSV *</label>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">Archivo CSV *</label>
             <input type="text" id="gh-path" required placeholder="Catalogof.csv" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-mono focus:border-ingco-yellow focus:outline-none" />
           </div>
           <div>
@@ -208,24 +303,30 @@
     </div>
   </div>
 
-  <!-- MODAL: CAMBIAR TASA DE CAMBIO -->
+  <!-- MODAL: CAMBIAR TASA DE CAMBIO (MANUAL) -->
   <div id="rate-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-xl max-w-md w-full overflow-hidden shadow-2xl border-2 border-ingco-yellow">
       <div class="bg-ingco-dark text-white px-5 py-3.5 flex items-center justify-between border-b-2 border-ingco-yellow">
-        <h3 class="font-industrial font-extrabold text-lg uppercase">Actualizar Tasa de Cambio</h3>
+        <h3 class="font-industrial font-extrabold text-lg uppercase">Cambiar Tasa de Cambio (Manual)</h3>
         <button type="button" onclick="closeRateModal()" class="text-neutral-400 hover:text-white font-bold text-xl cursor-pointer">✕</button>
       </div>
       <form onsubmit="saveRateForm(event)" class="p-5 space-y-4 text-xs">
+        <div class="flex items-center justify-between bg-neutral-100 p-3 rounded-lg border border-neutral-200">
+          <span class="text-neutral-700 font-medium">¿Necesitas verificar la tasa oficial?</span>
+          <a href="https://www.bcv.org.ve/" target="_blank" rel="noopener noreferrer" class="bg-ingco-black text-ingco-yellow font-bold px-3 py-1.5 rounded hover:bg-neutral-800 transition">
+            Ir a BCV.org.ve ↗
+          </a>
+        </div>
         <p class="text-neutral-600 leading-relaxed">
-          Al actualizar la tasa de cambio, se recalculará automáticamente el <strong>PRECIO BCV</strong> y la <strong>TASA DE CAMBIO</strong> en todos los productos.
+          Ingresa manualmente el valor en bolívares. Este cambio actualizará la columna <strong>TASA DE CAMBIO</strong> y recalculará el <strong>PRECIO BCV</strong> en <strong>Catalogof.csv</strong> y en el respaldo local.
         </p>
         <div>
-          <label class="block font-bold uppercase text-neutral-700 mb-1">Nueva Tasa de Cambio (Bs. por 1 USD) *</label>
+          <label class="block font-bold uppercase text-neutral-700 mb-1">Nueva Tasa de Cambio Manual (Bs. por 1 USD) *</label>
           <input type="number" step="0.01" min="0.01" id="form-rate-input" required placeholder="914.02" class="w-full border border-neutral-300 rounded-lg px-3 py-2.5 font-industrial font-black text-lg text-ingco-black focus:border-ingco-yellow focus:outline-none" />
         </div>
         <div class="flex justify-end gap-2 pt-3 border-t">
           <button type="button" onclick="closeRateModal()" class="bg-neutral-200 hover:bg-neutral-300 font-bold px-4 py-2 rounded-lg cursor-pointer">Cancelar</button>
-          <button type="submit" class="bg-ingco-yellow hover:bg-ingco-orange font-industrial font-extrabold uppercase px-5 py-2 rounded-lg text-black cursor-pointer">Aplicar Tasa</button>
+          <button type="submit" class="bg-ingco-yellow hover:bg-ingco-orange font-industrial font-extrabold uppercase px-5 py-2 rounded-lg text-black cursor-pointer">Aplicar Tasa Manual</button>
         </div>
       </form>
     </div>
@@ -282,7 +383,7 @@
             <input type="number" step="0.01" min="0" id="form-precio" oninput="updateModalBcvPreview()" required placeholder="30.00" class="w-full border border-neutral-300 rounded-lg px-3 py-2 font-bold text-sm focus:border-ingco-yellow focus:outline-none" />
           </div>
           <div>
-            <label class="block font-bold uppercase text-neutral-700 mb-1">7. Precio BCV (Auto)</label>
+            <label class="block font-bold uppercase text-neutral-700 mb-1">7. Precio BCV (Bs.)</label>
             <input type="text" id="form-precio-bcv-preview" readonly class="w-full bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2 font-bold text-sm text-neutral-700 cursor-not-allowed" />
           </div>
         </div>
@@ -331,6 +432,9 @@
 
     const GH_STORAGE_KEY = "ferrepro_github_cfg";
     const GH_TOKEN_KEY = "ferrepro_github_token";
+    const PIN_STORAGE_KEY = "hierrosammy_admin_pin";
+    const BACKUP_STORAGE_KEY = "hierrosammy_offline_backup";
+    const DEFAULT_PIN = "1234";
 
     let githubConfig = {
       owner: "Divalz2025",
@@ -375,6 +479,128 @@
       }
     ];
 
+    /* ==================== SEGURIDAD PIN DE 4 CIFRAS ==================== */
+    function getStoredPin() {
+      const saved = localStorage.getItem(PIN_STORAGE_KEY);
+      return (saved && /^\d{4}$/.test(saved)) ? saved : DEFAULT_PIN;
+    }
+
+    function verifyPinLogin(event) {
+      event.preventDefault();
+      const input = document.getElementById("login-pin-input");
+      const err = document.getElementById("pin-error-msg");
+      if (input.value === getStoredPin()) {
+        err.classList.add("hidden");
+        document.getElementById("pin-lock-screen").classList.add("hidden");
+        document.getElementById("app-protected-wrapper").classList.remove("hidden");
+        initAdmin();
+      } else {
+        err.classList.remove("hidden");
+        input.value = "";
+        input.focus();
+      }
+    }
+
+    function openPinSettingsModal() {
+      document.getElementById("new-pin-input").value = "";
+      document.getElementById("confirm-pin-input").value = "";
+      document.getElementById("pin-settings-modal").classList.remove("hidden");
+    }
+
+    function closePinSettingsModal() {
+      document.getElementById("pin-settings-modal").classList.add("hidden");
+    }
+
+    function saveNewPinForm(event) {
+      event.preventDefault();
+      const p1 = document.getElementById("new-pin-input").value.trim();
+      const p2 = document.getElementById("confirm-pin-input").value.trim();
+
+      if (!/^\d{4}$/.test(p1)) {
+        showToast("El PIN debe tener exactamente 4 números.", true);
+        return;
+      }
+      if (p1 !== p2) {
+        showToast("Los PIN ingresados no coinciden.", true);
+        return;
+      }
+
+      localStorage.setItem(PIN_STORAGE_KEY, p1);
+      closePinSettingsModal();
+      showToast("PIN de seguridad actualizado correctamente.");
+    }
+
+    /* ==================== RESPALDO LOCAL OFFLINE ==================== */
+    function saveLocalBackup(notify = false) {
+      const backupPayload = {
+        timestamp: new Date().toISOString(),
+        bcvRate: Number(config.bcvRate),
+        products: products,
+        csvSnapshot: buildCatalogCsvContent()
+      };
+      localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(backupPayload));
+      localStorage.setItem("ferrepro_config", JSON.stringify(config));
+      localStorage.setItem("ferrepro_products", JSON.stringify(products));
+      updateBackupIndicator(backupPayload.timestamp);
+      if (notify) {
+        showToast("Respaldo local guardado para funcionar sin internet.");
+      }
+    }
+
+    function loadLocalBackup() {
+      const rawBackup = localStorage.getItem(BACKUP_STORAGE_KEY);
+      if (rawBackup) {
+        try {
+          const parsed = JSON.parse(rawBackup);
+          if (parsed && Array.isArray(parsed.products) && parsed.products.length > 0) {
+            if (Number(parsed.bcvRate) > 0) {
+              config.bcvRate = Number(parsed.bcvRate);
+            }
+            products = parsed.products;
+            updateBackupIndicator(parsed.timestamp);
+            return true;
+          }
+        } catch (e) {}
+      }
+      return false;
+    }
+
+    function updateBackupIndicator(isoString) {
+      const badge = document.getElementById("backup-status-badge");
+      const label = document.getElementById("last-backup-label");
+      const online = navigator.onLine;
+      const dot = document.getElementById("connection-dot");
+
+      if (dot) {
+        dot.className = online
+          ? "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"
+          : "w-2.5 h-2.5 rounded-full bg-amber-400";
+      }
+
+      if (isoString) {
+        const d = new Date(isoString);
+        const formatted = d.toLocaleString("es-VE", {
+          day: "2-digit",
+          month: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+        if (badge) {
+          badge.textContent = online ? `En línea • Respaldo ${formatted}` : `Modo Sin Internet • Respaldo ${formatted}`;
+        }
+        if (label) {
+          label.textContent = `Respaldo local: ${formatted}`;
+        }
+      }
+    }
+
+    window.addEventListener("online", () => updateBackupIndicator(JSON.parse(localStorage.getItem(BACKUP_STORAGE_KEY) || "{}").timestamp));
+    window.addEventListener("offline", () => {
+      updateBackupIndicator(JSON.parse(localStorage.getItem(BACKUP_STORAGE_KEY) || "{}").timestamp);
+      showToast("Sin conexión a internet: trabajando sobre el respaldo local.", true);
+    });
+
+    /* ==================== NOTIFICACIONES ==================== */
     function showToast(message, isError = false) {
       const toast = document.getElementById("toast-notification");
       const box = document.getElementById("toast-box");
@@ -403,6 +629,7 @@
       }, 3800);
     }
 
+    /* ==================== CONFIGURACIÓN GITHUB ==================== */
     function loadGithubConfig() {
       const saved = localStorage.getItem(GH_STORAGE_KEY);
       if (saved) {
@@ -422,7 +649,7 @@
     function updateGithubBadges() {
       const badge = document.getElementById("repo-status-badge");
       if (badge) {
-        badge.textContent = `${githubConfig.owner}/${githubConfig.repo} (${githubConfig.branch})`;
+        badge.textContent = `${githubConfig.owner}/${githubConfig.repo} (${githubConfig.path})`;
       }
       const link = document.getElementById("catalog-web-link");
       if (link) {
@@ -460,7 +687,7 @@
       githubConfig = {
         owner: document.getElementById("gh-owner").value.trim(),
         repo: document.getElementById("gh-repo").value.trim(),
-        path: document.getElementById("gh-path").value.trim().replace(/^\/+/, ""),
+        path: document.getElementById("gh-path").value.trim().replace(/^\/+/, "") || "Catalogof.csv",
         branch: document.getElementById("gh-branch").value.trim() || "main"
       };
       localStorage.setItem(GH_STORAGE_KEY, JSON.stringify(githubConfig));
@@ -531,13 +758,13 @@
       return "\uFEFF" + [header, ...rows].join("\n");
     }
 
-    function applyCsvText(text) {
+    function applyCsvText(text, silent = false) {
       const firstLine = text.split(/\r?\n/)[0] || "";
       const delimiter = firstLine.includes(";") ? ";" : ",";
       const parsedRows = parseCsvRfc4180(text, delimiter);
 
       if (parsedRows.length < 2) {
-        showToast("El archivo CSV está vacío o no tiene registros.", true);
+        if (!silent) showToast("El archivo Catalogof.csv está vacío o no tiene registros.", true);
         return false;
       }
 
@@ -611,39 +838,60 @@
         const rateToApply = detectedRate || config.bcvRate;
         syncProductsWithRate(rateToApply);
         updateUI();
-        showToast(`¡Se cargaron ${imported.length} productos correctamente!`);
+        if (!silent) showToast(`Base de datos cargada desde Catalogof.csv (${imported.length} productos).`);
         return true;
       }
 
-      showToast("No se encontraron filas válidas en el CSV.", true);
+      if (!silent) showToast("No se encontraron filas válidas en Catalogof.csv.", true);
       return false;
     }
 
-    async function pullCatalogFromGithub() {
+    async function pullCatalogFromGithub(silent = false) {
+      if (!navigator.onLine) {
+        if (!silent) showToast("Sin internet: usando respaldo local.", true);
+        return false;
+      }
+
       const token = localStorage.getItem(GH_TOKEN_KEY) || "";
       const apiUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/${githubConfig.path}?ref=${encodeURIComponent(githubConfig.branch)}&_=${Date.now()}`;
       const headers = { "Accept": "application/vnd.github+json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
       try {
-        showToast(`Leyendo ${githubConfig.path} desde GitHub...`);
+        if (!silent) showToast(`Leyendo ${githubConfig.path} desde GitHub...`);
         const res = await fetch(apiUrl, { headers, cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const csvText = base64ToUtf8(data.content);
-        applyCsvText(csvText);
+        return applyCsvText(csvText, silent);
       } catch (err) {
-        showToast(`No se pudo leer desde GitHub: ${err.message}`, true);
+        try {
+          const rawUrl = `https://raw.githubusercontent.com/${githubConfig.owner}/${githubConfig.repo}/${encodeURIComponent(githubConfig.branch)}/${githubConfig.path}?_=${Date.now()}`;
+          const rawRes = await fetch(rawUrl, { cache: "no-store" });
+          if (!rawRes.ok) throw new Error(`HTTP ${rawRes.status}`);
+          const rawText = await rawRes.text();
+          return applyCsvText(rawText, silent);
+        } catch (fallbackErr) {
+          if (!silent) showToast(`No se pudo leer ${githubConfig.path}. Usando respaldo local.`, true);
+          return false;
+        }
       }
     }
 
     async function pushCatalogToGithub() {
       if (isPushingGithub) return;
 
+      saveLocalBackup(false);
+
+      if (!navigator.onLine) {
+        showToast("Sin internet: cambios guardados en el respaldo local.", true);
+        return;
+      }
+
       const token = localStorage.getItem(GH_TOKEN_KEY) || "";
       if (!token) {
         openGithubModal();
-        showToast("Configura tu GitHub Token antes de subir.", true);
+        showToast("Configura tu GitHub Token para guardar en Catalogof.csv.", true);
         return;
       }
 
@@ -668,7 +916,7 @@
       };
 
       try {
-        showToast("Sincronizando con GitHub...");
+        showToast(`Actualizando ${githubConfig.path} en GitHub...`);
 
         let sha = null;
         const getUrl = `${apiUrl}?ref=${encodeURIComponent(githubConfig.branch)}&_=${Date.now()}`;
@@ -700,7 +948,8 @@
           throw new Error(errData.message || `Error ${putRes.status} al subir archivo`);
         }
 
-        showToast(`¡${githubConfig.path} actualizado en ${githubConfig.owner}/${githubConfig.repo}!`);
+        saveLocalBackup(false);
+        showToast(`¡${githubConfig.path} actualizado en GitHub y respaldado localmente!`);
       } catch (err) {
         showToast(`Error al subir a GitHub: ${err.message}`, true);
       } finally {
@@ -724,51 +973,45 @@
           tasaCambio: cleanRate
         };
       });
-      localStorage.setItem("ferrepro_config", JSON.stringify(config));
-      localStorage.setItem("ferrepro_products", JSON.stringify(products));
+      saveLocalBackup(false);
     }
 
-    function initAdmin() {
+    async function initAdmin() {
       loadGithubConfig();
 
-      const savedConfig = localStorage.getItem("ferrepro_config");
-      if (savedConfig) {
-        try {
-          const parsed = JSON.parse(savedConfig);
-          if (parsed && Number(parsed.bcvRate) > 0) {
-            config.bcvRate = Number(parsed.bcvRate);
-          }
-        } catch (e) {}
-      }
+      const hasBackup = loadLocalBackup();
+      if (!hasBackup) {
+        const savedConfig = localStorage.getItem("ferrepro_config");
+        if (savedConfig) {
+          try {
+            const parsed = JSON.parse(savedConfig);
+            if (parsed && Number(parsed.bcvRate) > 0) config.bcvRate = Number(parsed.bcvRate);
+          } catch (e) {}
+        }
 
-      const savedProducts = localStorage.getItem("ferrepro_products");
-      if (savedProducts) {
-        try {
-          const parsedList = JSON.parse(savedProducts);
-          if (Array.isArray(parsedList) && parsedList.length > 0) {
-            products = parsedList.map(item => ({
-              codigoSku: item.codigoSku || item.codigo || "",
-              nombreProducto: item.nombreProducto || item.producto || "",
-              categoria: item.categoria || "General",
-              descripcion: item.descripcion !== undefined ? item.descripcion : (item.especificaciones || ""),
-              stock: Number(item.stock) || 0,
-              precioDolar: Number(item.precioDolar !== undefined ? item.precioDolar : item.precioUsd) || 0,
-              precioBcv: 0,
-              foto: item.foto || "",
-              tasaCambio: config.bcvRate
-            }));
-          } else {
+        const savedProducts = localStorage.getItem("ferrepro_products");
+        if (savedProducts) {
+          try {
+            const parsedList = JSON.parse(savedProducts);
+            if (Array.isArray(parsedList) && parsedList.length > 0) {
+              products = parsedList;
+            } else {
+              products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+            }
+          } catch (e) {
             products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
           }
-        } catch (e) {
+        } else {
           products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
         }
-      } else {
-        products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+        syncProductsWithRate(config.bcvRate);
       }
 
-      syncProductsWithRate(config.bcvRate);
       updateUI();
+
+      if (navigator.onLine) {
+        await pullCatalogFromGithub(true);
+      }
     }
 
     function formatVisualDecimal(num) {
@@ -809,7 +1052,7 @@
 
       const tbody = document.getElementById("products-table-body");
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-neutral-400 font-medium">No se encontraron productos en la base de datos.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-neutral-400 font-medium">No se encontraron productos en Catalogof.csv.</td></tr>`;
         return;
       }
 
@@ -826,32 +1069,32 @@
           : "https://placehold.co/80x80/262626/F5A623?text=SIN+FOTO";
 
         return `
-          <tr class="hover:bg-neutral-50 transition align-middle">
-            <td class="p-3 font-mono font-bold text-ingco-black whitespace-nowrap">
-              <span class="bg-ingco-black text-ingco-yellow px-2.5 py-1 rounded text-[11px] tracking-wide">${escapeHtml(p.codigoSku)}</span>
+          <tr class="group hover:bg-neutral-50 transition align-middle">
+            <td class="px-2.5 py-2 font-mono font-bold text-ingco-black whitespace-nowrap">
+              <span class="bg-ingco-black text-ingco-yellow px-2 py-0.5 rounded text-[11px] tracking-wide">${escapeHtml(p.codigoSku)}</span>
             </td>
-            <td class="p-3 font-industrial font-extrabold text-sm uppercase text-neutral-900">
+            <td class="px-2.5 py-2 font-industrial font-extrabold text-xs xl:text-sm uppercase text-neutral-900 max-w-[170px] leading-tight">
               ${escapeHtml(p.nombreProducto)}
             </td>
-            <td class="p-3 whitespace-nowrap">
-              <span class="bg-neutral-200 text-neutral-800 px-2.5 py-1 rounded-md font-bold text-[10px] uppercase">${escapeHtml(p.categoria)}</span>
+            <td class="px-2.5 py-2">
+              <span class="inline-block bg-neutral-200 text-neutral-800 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase leading-tight">${escapeHtml(p.categoria)}</span>
             </td>
-            <td class="p-3 text-neutral-600 text-[11px] leading-snug max-w-xs">
+            <td class="px-2.5 py-2 text-neutral-600 text-[11px] leading-snug max-w-[230px]">
               ${descHtml}
             </td>
-            <td class="p-3 text-center whitespace-nowrap">
-              <span class="px-2.5 py-1 rounded-md font-bold text-[11px] ${Number(p.stock) > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+            <td class="px-2 py-2 text-center whitespace-nowrap">
+              <span class="px-2 py-0.5 rounded-md font-bold text-[11px] ${Number(p.stock) > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
                 ${Number(p.stock)} unid.
               </span>
             </td>
-            <td class="p-3 text-right font-industrial font-black text-base text-ingco-orange whitespace-nowrap">
+            <td class="px-2 py-2 text-right font-industrial font-black text-sm xl:text-base text-ingco-orange whitespace-nowrap">
               $${formatVisualDecimal(precioUsd)}
             </td>
-            <td class="p-3 text-right font-industrial font-extrabold text-sm text-neutral-800 whitespace-nowrap">
+            <td class="px-2 py-2 text-right font-industrial font-extrabold text-xs xl:text-sm text-neutral-800 whitespace-nowrap">
               Bs. ${formatVisualDecimal(precioBcv)}
             </td>
-            <td class="p-3 text-center">
-              <div class="w-11 h-11 mx-auto rounded-lg border border-neutral-200 bg-white overflow-hidden shadow-2xs flex items-center justify-center">
+            <td class="px-2 py-2 text-center">
+              <div class="w-10 h-10 mx-auto rounded-lg border border-neutral-200 bg-white overflow-hidden shadow-2xs flex items-center justify-center">
                 <img
                   src="${imgUrl}"
                   alt="${escapeHtml(p.nombreProducto)}"
@@ -860,12 +1103,14 @@
                 />
               </div>
             </td>
-            <td class="p-3 text-right font-mono font-bold text-xs text-neutral-600 whitespace-nowrap">
+            <td class="px-2 py-2 text-right font-mono font-bold text-[11px] xl:text-xs text-neutral-600 whitespace-nowrap">
               ${formatVisualDecimal(tasa)} Bs.
             </td>
-            <td class="p-3 text-center whitespace-nowrap space-x-1">
-              <button type="button" onclick="openProductModal(${realIdx})" class="bg-neutral-200 hover:bg-ingco-yellow text-black px-2.5 py-1.5 rounded-md font-bold transition cursor-pointer">Editar</button>
-              <button type="button" onclick="requestDeleteProduct(${realIdx})" class="bg-red-100 hover:bg-red-600 hover:text-white text-red-700 px-2.5 py-1.5 rounded-md font-bold transition cursor-pointer">Eliminar</button>
+            <td class="px-2.5 py-2 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-neutral-50 shadow-[-4px_0_8px_rgba(0,0,0,0.06)]">
+              <div class="inline-flex items-center gap-1">
+                <button type="button" onclick="openProductModal(${realIdx})" class="bg-neutral-200 hover:bg-ingco-yellow text-black px-2 py-1 rounded font-bold text-[11px] transition cursor-pointer">Editar</button>
+                <button type="button" onclick="requestDeleteProduct(${realIdx})" class="bg-red-100 hover:bg-red-600 hover:text-white text-red-700 px-2 py-1 rounded font-bold text-[11px] transition cursor-pointer">Eliminar</button>
+              </div>
             </td>
           </tr>
         `;
@@ -891,7 +1136,7 @@
       syncProductsWithRate(Number(val.toFixed(4)));
       closeRateModal();
       updateUI();
-      showToast(`Tasa actualizada a ${formatVisualDecimal(config.bcvRate)} Bs. y precios recalculados.`);
+      showToast(`Tasa manual actualizada a ${formatVisualDecimal(config.bcvRate)} Bs. y guardada en respaldo local.`);
     }
 
     function updateModalBcvPreview() {
@@ -962,10 +1207,10 @@
         products.push(productData);
       }
 
-      localStorage.setItem("ferrepro_products", JSON.stringify(products));
+      saveLocalBackup(false);
       closeProductModal();
       updateUI();
-      showToast("¡Producto guardado localmente! Recuerda pulsar 'Subir a GitHub' para publicar.");
+      showToast("Producto guardado en respaldo local. Pulsa 'Guardar en GitHub' para actualizar Catalogof.csv.");
     }
 
     function requestDeleteProduct(index) {
@@ -984,9 +1229,9 @@
     function confirmDeleteProduct() {
       if (pendingDeleteIndex >= 0 && pendingDeleteIndex < products.length) {
         const removed = products.splice(pendingDeleteIndex, 1)[0];
-        localStorage.setItem("ferrepro_products", JSON.stringify(products));
+        saveLocalBackup(false);
         updateUI();
-        showToast(`Producto ${removed.codigoSku} eliminado.`);
+        showToast(`Producto ${removed.codigoSku} eliminado y respaldo local actualizado.`);
       }
       closeDeleteModal();
     }
@@ -1011,12 +1256,12 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "Inventario_BaseDatos.csv";
+      a.download = "Catalogof.csv";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast("Archivo CSV exportado con las 9 columnas.");
+      showToast("Archivo Catalogof.csv descargado.");
     }
 
     function parseFlexibleNumber(str) {
@@ -1102,7 +1347,10 @@
       reader.readAsText(file, "UTF-8");
     }
 
-    window.addEventListener("DOMContentLoaded", initAdmin);
+    window.addEventListener("DOMContentLoaded", () => {
+      const pinInput = document.getElementById("login-pin-input");
+      if (pinInput) pinInput.focus();
+    });
   </script>
 </body>
 </html>
